@@ -1,4 +1,5 @@
 **Help**
+
 Usage: shy [OPTIONS] [PROMPT]...
 
 Arguments
@@ -11,6 +12,7 @@ Options
 - --help Show this message and exit.
 
 **Install**
+
 `poetry install`
 
 Use `./shy --configure` to change LLM (default use ollama - llama3.1)
