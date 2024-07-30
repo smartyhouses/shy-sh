@@ -1,3 +1,7 @@
+# Shy.sh
+
+Sh shell AI copilot
+
 **Help**
 
 Usage: shy [OPTIONS] [PROMPT]...
