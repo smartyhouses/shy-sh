@@ -44,6 +44,7 @@ class ShyAgent:
             Rules:
             You can use only the tools provided in this prompt to accomplish the tasks
             If you need to use tools your response must be in JSON format with this structure: {{ "tool": "...", "arg": "...", "thoughts": "..." }}
+            Ensure to gather all the informations that you need using tools and then double check the output of the tools if needed before giving the final answer
             After you completed the task output your final answer to the task {lang_spec}without including any json
             Answer truthfully with the informations you have
             You cannot use tools and complete the task with your final answer in the same message so remember to use the tools that you need first
@@ -72,7 +73,7 @@ class ShyAgent:
     def _get_tools(self):
         @tool
         def bash(agent, arg: str):
-            """to execute a bash command in the terminal, useful for every task that requires to interact with the current system or local files, avoid interactive commands"""
+            """to execute a bash command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass interactive commands"""
             print(f"🛠️ [bold green]{arg}[/bold green]")
             result = subprocess.run(
                 arg,
@@ -86,7 +87,7 @@ class ShyAgent:
 
         @tool
         def human(agent, arg):
-            """to ask me for better understanding, use it if you do not have enough informations"""
+            """to ask me for better understanding, use it if you do not have enough informations, write your question as argument"""
             return FinalResponse(response=f"I'm not sure about this.\n\n{arg}")
 
         return [bash, human]
@@ -133,8 +134,11 @@ class ShyAgent:
             },
         ]
         result = []
-        if "claude" in settings.llm.name:
-            result.append(HumanMessage(content="Initialize the shell"))
+        result.append(
+            HumanMessage(
+                content="Fai un test dei tool e preparati per il prossimo task"
+            )
+        )
         for action in actions:
             result.append(AIMessage(content=json.dumps(action)))
             response = subprocess.run(
@@ -146,8 +150,7 @@ class ShyAgent:
             response = response.stdout.decode() or response.stderr.decode()
 
             result.append(HumanMessage(content=f"Tool response:\n{response}"))
-        if "claude" in settings.llm.name:
-            result.append(AIMessage(content="Ho finito di inizializzare la shell"))
+        result.append(AIMessage(content="Ho finito sono pronto per iniziare!"))
         return result
 
     def _execute(
