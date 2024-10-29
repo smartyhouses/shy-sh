@@ -12,6 +12,8 @@ from time import strftime
 from rich import print
 from rich.syntax import Syntax
 from rich.live import Live
+from contextlib import redirect_stdout
+from io import StringIO
 
 from .tools import tool
 
@@ -51,6 +53,18 @@ class ShyAgent:
             """
         )
 
+        self.python_expert_template = dedent(
+            """
+            Output only a block of python code like this:
+            ```python
+            [your python code]
+            ```
+
+            Write a python script that accomplishes the task.
+            Task: {input}
+            """
+        )
+
     @property
     def chain(self):
         prompt = ChatPromptTemplate.from_messages(
@@ -60,6 +74,20 @@ class ShyAgent:
                 MessagesPlaceholder("history", optional=True),
                 ("human", "Task: {input}"),
                 MessagesPlaceholder("tool_history", optional=True),
+            ]
+        )
+        return prompt | self.llm | StrOutputParser()
+
+    @property
+    def python_expert_chain(self):
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    "You are a python expert. The current date and time is {timestamp}",
+                ),
+                MessagesPlaceholder("history", optional=True),
+                ("human", self.python_expert_template),
             ]
         )
         return prompt | self.llm | StrOutputParser()
@@ -86,11 +114,29 @@ class ShyAgent:
             return stdout
 
         @tool
+        def python_expert(agent, arg: str):
+            """to delegate the task to a python expert that can write and execute python code, use only if you cant resolve the task with bash, just forward the task as argument without any python code"""
+            print(f"🐍 [bold green]Generating python script[/bold green]")
+            code = self.python_expert_chain.invoke(
+                {
+                    "input": arg,
+                    "timestamp": strftime("%Y-%m-%d %H:%M %Z"),
+                    "history": self.history,
+                }
+            )
+            code = code.replace("```python\n", "").replace("```", "")
+            stdout = StringIO()
+            with redirect_stdout(stdout):
+                exec(code)
+            res = f"Done\n{code}\n\nOutput:\n{stdout.getvalue() or 'Success!'}"
+            return FinalResponse(response=res)
+
+        @tool
         def human(agent, arg):
             """to ask me for better understanding, use it if you do not have enough informations, write your question as argument"""
             return FinalResponse(response=f"I'm not sure about this.\n\n{arg}")
 
-        return [bash, human]
+        return [bash, python_expert, human]
 
     def _check_json(self, text: str):
         if text.count("{") > 0 and text.count("{") - text.count("}") == 0:

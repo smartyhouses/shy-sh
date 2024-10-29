@@ -22,7 +22,12 @@ class LLMSchema(BaseModel):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        yaml_file=["~/.config/shy/config.yml", "~/.config/shy/config.yaml"]
+        yaml_file=[
+            "~/.config/shy/config.yml",
+            "~/.config/shy/config.yaml",
+            "./shy.yml",
+            "./shy.yaml",
+        ]
     )
 
     llm: LLMSchema = LLMSchema(provider="ollama", name="llama3.1")
