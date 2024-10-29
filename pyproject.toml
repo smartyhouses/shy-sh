@@ -17,7 +17,7 @@ typer = "^0.12.3"
 pyyaml = "^6.0.1"
 pydantic-settings = "^2.3.4"
 langchain-google-genai = "^1.0.8"
-boto3 = "^1.34.151"
+boto3 = "==1.34.162"
 langchain-aws = "^0.1.12"
 
 [tool.poetry.group.dev.dependencies]
