@@ -11,7 +11,8 @@ prompt [PROMPT]
 
 Options
 
-- -i Interactive mode [default false if a prompt is passed else false]
+- -i Interactive mode [default false if a prompt is passed else true]
+- -a Ask confirmation before executing scripts [default false]
 - --configure Configure LLM
 - --help Show this message and exit.
 
@@ -22,8 +23,6 @@ Options
 Use `shy --configure` to change LLM (default use ollama - llama3.1)
 
 api_key format for aws bedrock: `region_name acces_key secret_key`
-
-add to PATH or link the executable in /bin if you want to use it globally
 
 **Examples**
 
