@@ -116,7 +116,7 @@ class ShyAgent:
         @tool
         def python_expert(agent, arg: str):
             """to delegate the task to a python expert that can write and execute python code, use only if you cant resolve the task with bash, just forward the task as argument without any python code"""
-            print(f"🐍 [bold green]Generating python script[/bold green]")
+            print(f"🐍 [bold yellow]Generating python script...[/bold yellow]\n")
             code = self.python_expert_chain.invoke(
                 {
                     "input": arg,
@@ -128,7 +128,8 @@ class ShyAgent:
             stdout = StringIO()
             with redirect_stdout(stdout):
                 exec(code)
-            res = f"Done\n{code}\n\nOutput:\n{stdout.getvalue() or 'Success!'}"
+            print(Syntax(code.strip(), "python", background_color="#212121"))
+            res = f"[bold green]Output:[/bold green]\n{stdout.getvalue() or 'Success!'}"
             return FinalResponse(response=res)
 
         @tool
@@ -180,11 +181,7 @@ class ShyAgent:
             },
         ]
         result = []
-        result.append(
-            HumanMessage(
-                content="Fai un test dei tool e preparati per il prossimo task"
-            )
-        )
+        result.append(HumanMessage(content="Check tools"))
         for action in actions:
             result.append(AIMessage(content=json.dumps(action)))
             response = subprocess.run(
@@ -196,7 +193,7 @@ class ShyAgent:
             response = response.stdout.decode() or response.stderr.decode()
 
             result.append(HumanMessage(content=f"Tool response:\n{response}"))
-        result.append(AIMessage(content="Ho finito sono pronto per iniziare!"))
+        result.append(AIMessage(content="Done"))
         return result
 
     def _execute(
