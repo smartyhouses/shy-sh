@@ -12,7 +12,14 @@ def exec(
         Optional[bool],
         typer.Option(
             "-i",
-            help="Interactive mode [default false if a prompt is passed else false]",
+            help="Interactive mode [default false if a prompt is passed]",
+        ),
+    ] = False,
+    ask_before_execute: Annotated[
+        Optional[bool],
+        typer.Option(
+            "-a",
+            help="Ask confirmation before executing scripts [default false]",
         ),
     ] = False,
     configure: Annotated[
@@ -28,7 +35,7 @@ def exec(
         interactive = True
     else:
         print(f"✨: {task}\n")
-    ShyAgent(interactive=interactive).start(task)
+    ShyAgent(interactive=interactive, ask_before_execute=ask_before_execute).start(task)
 
 
 def main():

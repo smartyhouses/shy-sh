@@ -29,9 +29,12 @@ class FinalResponse(BaseModel):
 
 
 class ShyAgent:
-    def __init__(self, max_iterations: int = 4, interactive=False):
+    def __init__(
+        self, max_iterations: int = 4, interactive=False, ask_before_execute=False
+    ):
         self.max_iterations = max_iterations
         self.interactive = interactive
+        self.ask_before_execute = ask_before_execute
         self.history = []
         self.tools = self._get_tools()
         self.llm = get_llm()
@@ -61,7 +64,7 @@ class ShyAgent:
             ```
 
             Do not wrap your script in if __name__ == "__main__": block
-            
+
             Write a python script that accomplishes the task.
             Task: {input}
             """
@@ -105,6 +108,15 @@ class ShyAgent:
         def bash(agent, arg: str):
             """to execute a bash command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass interactive commands"""
             print(f"🛠️ [bold green]{arg}[/bold green]")
+            if self.ask_before_execute:
+                confirm = (
+                    input(
+                        "\n[dark_orange]Do you want to execute this command? [Y/n]:[/dark_orange] "
+                    )
+                    or "y"
+                )
+                if confirm.lower() == "n":
+                    return FinalResponse(response="Task interrupted")
             result = subprocess.run(
                 arg,
                 stdout=subprocess.PIPE,
@@ -127,10 +139,19 @@ class ShyAgent:
                 }
             )
             code = code.replace("```python\n", "").replace("```", "")
+            print(Syntax(code.strip(), "python", background_color="#212121"))
+            if self.ask_before_execute:
+                confirm = (
+                    input(
+                        "\n[dark_orange]Do you want to execute this script? [Y/n]:[/dark_orange] "
+                    )
+                    or "y"
+                )
+                if confirm.lower() == "n":
+                    return FinalResponse(response="Task interrupted")
             stdout = StringIO()
             with redirect_stdout(stdout):
                 exec(code)
-            print(Syntax(code.strip(), "python", background_color="#212121"))
             output = stdout.getvalue().strip()
             output = ("\n" + output) if output else "Done"
             return FinalResponse(response=output)
