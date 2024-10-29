@@ -6,7 +6,7 @@ from shy_sh.settings import settings, configure_yaml
 from rich import print
 
 
-def main(
+def exec(
     prompt: Annotated[Optional[list[str]], typer.Argument(allow_dash=False)] = None,
     interactive: Annotated[
         Optional[bool],
@@ -31,5 +31,9 @@ def main(
     ShyAgent(interactive=interactive).start(task)
 
 
+def main():
+    typer.run(exec)
+
+
 if __name__ == "__main__":
-    typer.run(main)
+    main()

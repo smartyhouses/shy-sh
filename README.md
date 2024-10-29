@@ -17,9 +17,9 @@ Options
 
 **Install**
 
-`poetry install`
+`pip install git+https://github.com/mceck/shy-sh`
 
-Use `./shy --configure` to change LLM (default use ollama - llama3.1)
+Use `shy --configure` to change LLM (default use ollama - llama3.1)
 
 api_key format for aws bedrock: `region_name acces_key secret_key`
 
@@ -28,7 +28,7 @@ add to PATH or link the executable in /bin if you want to use it globally
 **Examples**
 
 ```
-./shy find all python files in this folder
+shy find all python files in this folder
 
 🛠️ find . -type f -name '*.py'
 ./src/chat_models.py
@@ -42,7 +42,7 @@ add to PATH or link the executable in /bin if you want to use it globally
 ```
 
 ```
-./shy convert aaa.png to jpeg and resize to 200x200
+shy convert aaa.png to jpeg and resize to 200x200
 
 🛠️ convert aaa.png -resize 200x200 aaa.jpg
 Success!
@@ -50,7 +50,7 @@ Success!
 ```
 
 ```
-./shy -i
+shy -i
 
 ✨: Hello, how are you?
 
