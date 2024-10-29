@@ -60,6 +60,8 @@ class ShyAgent:
             [your python code]
             ```
 
+            Do not wrap your script in if __name__ == "__main__": block
+            
             Write a python script that accomplishes the task.
             Task: {input}
             """
@@ -129,15 +131,11 @@ class ShyAgent:
             with redirect_stdout(stdout):
                 exec(code)
             print(Syntax(code.strip(), "python", background_color="#212121"))
-            res = f"[bold green]Output:[/bold green]\n{stdout.getvalue() or 'Success!'}"
-            return FinalResponse(response=res)
+            output = stdout.getvalue().strip()
+            output = ("\n" + output) if output else "Done"
+            return FinalResponse(response=output)
 
-        @tool
-        def human(agent, arg):
-            """to ask me for better understanding, use it if you do not have enough informations, write your question as argument"""
-            return FinalResponse(response=f"I'm not sure about this.\n\n{arg}")
-
-        return [bash, python_expert, human]
+        return [bash, python_expert]
 
     def _check_json(self, text: str):
         if text.count("{") > 0 and text.count("{") - text.count("}") == 0:
@@ -181,7 +179,7 @@ class ShyAgent:
             },
         ]
         result = []
-        result.append(HumanMessage(content="Check tools"))
+        result.append(HumanMessage(content="Tools check"))
         for action in actions:
             result.append(AIMessage(content=json.dumps(action)))
             response = subprocess.run(
@@ -193,7 +191,7 @@ class ShyAgent:
             response = response.stdout.decode() or response.stderr.decode()
 
             result.append(HumanMessage(content=f"Tool response:\n{response}"))
-        result.append(AIMessage(content="Done"))
+        result.append(AIMessage(content="Ok"))
         return result
 
     def _execute(
@@ -254,7 +252,14 @@ class ShyAgent:
         answer = None
         if task:
             answer = self._run(task, examples)
-            print(f"🤖: {answer}")
+            print(
+                Syntax(
+                    f"🤖: {answer}",
+                    "console",
+                    theme="one-dark",
+                    background_color="#181818",
+                )
+            )
         if self.interactive:
             new_task = input("\n✨: ")
             print()
