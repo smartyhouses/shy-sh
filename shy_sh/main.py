@@ -1,6 +1,6 @@
 import typer
 from typing import Optional, Annotated
-
+from importlib.metadata import version
 from shy_sh.agent.agent import ShyAgent
 from shy_sh.settings import settings, configure_yaml
 from rich import print
@@ -25,7 +25,13 @@ def exec(
     configure: Annotated[
         Optional[bool], typer.Option("--configure", help="Configure LLM")
     ] = False,
+    display_version: Annotated[
+        Optional[bool], typer.Option("--version", help="Show version")
+    ] = False,
 ):
+    if display_version:
+        print(f"Version: {version(__package__ or 'shy-sh')}")
+        return
     if configure:
         configure_yaml()
         return

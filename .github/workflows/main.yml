@@ -9,6 +9,8 @@ jobs:
   build:
     name: Release to PyPI
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -23,8 +25,13 @@ jobs:
           version: 1.8.4
       - name: Install dependencies
         run: poetry config pypi-token.pypi ${{ secrets.PYPY_API_TOKEN }}
-      - name: Set version
+      - name: Update version
         run: poetry version ${{ github.ref_name }}
+      - name: Commit version
+        run: |
+          git add pyproject.toml
+          git commit -m "Bump version to ${{ github.ref_name }}"
+          git push
       - name: Publish package
         run: poetry publish --build
       - name: Zip dist
