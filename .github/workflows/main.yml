@@ -25,12 +25,12 @@ jobs:
           version: 1.8.4
       - name: Install dependencies
         run: poetry config pypi-token.pypi ${{ secrets.PYPY_API_TOKEN }}
-      - name: Update version
-        run: poetry version ${{ github.ref_name }}
-      - name: Commit version
+      - name: Bump version
         run: |
+          git checkout main
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          poetry version ${{ github.ref_name }}
           git add pyproject.toml
           git commit -m "Bump version to ${{ github.ref_name }}"
           git push
