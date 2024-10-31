@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "shy_sh"
-version = "0.1.9"
+version = "0.1.10"
 description = "Shell copilot - sh shell AI copilot"
 authors = ["Mattia Cecchini <matcecco@gmail.com>"]
 license = "MIT"
@@ -33,6 +33,7 @@ langchain-aws = "^0.1.12"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
+poetry-bumpversion = "^0.3.2"
 
 [tool.poetry.scripts]
 shy = "shy_sh.main:main"
