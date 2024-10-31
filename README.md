@@ -18,7 +18,7 @@ Options
 
 **Install**
 
-`pip install git+https://github.com/mceck/shy-sh`
+`pip install shy-sh`
 
 Use `shy --configure` to change LLM (default use ollama - llama3.1)
 
