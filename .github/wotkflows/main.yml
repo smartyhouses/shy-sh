@@ -1,9 +1,7 @@
-name: Publish shy-sh to PyPI
-
 on:
-  push:
-    branches:
-      - main
+  - push
+
+name: Publish shy-sh to PyPI
 
 jobs:
   build:
