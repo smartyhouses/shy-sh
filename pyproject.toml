@@ -1,9 +1,20 @@
 [tool.poetry]
 name = "shy_sh"
 version = "0.1.1"
-description = ""
+description = "Shell copilot - sh shell AI copilot"
 authors = ["Mattia Cecchini <matcecco@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/mceck/shy-sh"
 readme = "README.md"
+classifiers=[
+    'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    'Topic :: Terminals',
+    'Topic :: Utilities',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+]
 packages = [{include = "shy_sh"}]
 
 [tool.poetry.dependencies]
