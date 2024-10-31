@@ -23,8 +23,11 @@ jobs:
         uses: snok/install-poetry@v1
         with:
           version: 1.8.4
-      - name: Install dependencies
+      - name: Set up Poetry
         run: poetry config pypi-token.pypi ${{ secrets.PYPY_API_TOKEN }}
+      - uses: actions/checkout@v4
+        with:
+          ref: main
       - name: Bump version
         run: |
           git checkout main
@@ -34,27 +37,27 @@ jobs:
           git add pyproject.toml
           git commit -m "Bump version to ${{ github.ref_name }}"
           git push
-      - name: Publish package
-        run: poetry publish --build
-      - name: Zip dist
-        run: zip --junk-paths dist.zip dist/*
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist.zip
-          asset_name: shy-sh.zip
-          asset_content_type: application/zip
+      # - name: Publish package
+      #   run: poetry publish --build
+      # - name: Zip dist
+      #   run: zip --junk-paths dist.zip dist/*
+      # - name: Create Release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: ${{ github.ref_name }}
+      #     release_name: Release ${{ github.ref_name }}
+      #     draft: false
+      #     prerelease: false
+      # - name: Upload Release Asset
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./dist.zip
+      #     asset_name: shy-sh.zip
+      #     asset_content_type: application/zip
