@@ -1,6 +1,7 @@
 on:
-  tags:
-    - '*.*.*'
+  push:
+    tags:
+      - '*.*.*'
 
 name: Publish shy-sh to PyPI
 
