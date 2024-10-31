@@ -29,6 +29,8 @@ jobs:
         run: poetry version ${{ github.ref_name }}
       - name: Commit version
         run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add pyproject.toml
           git commit -m "Bump version to ${{ github.ref_name }}"
           git push
