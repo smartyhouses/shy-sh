@@ -1,7 +1,7 @@
 on:
-  push:
-    tags:
-      - '*.*.*'
+  - push
+  # tags:
+  #   - '*.*.*'
 
 name: Publish shy-sh to PyPI
 
@@ -23,10 +23,10 @@ jobs:
           version: 1.8.4
       - name: Install dependencies
         run: poetry config pypi-token.pypi ${{ secrets.PYPY_API_TOKEN }}
-      - name: Set version
-        run: poetry version ${{ github.ref_name }}
+      # - name: Set version
+      #   run: poetry version ${{ github.ref_name }}
       - name: Publish package
-        run: poetry publish --build
+        run: poetry build
       - name: Zip dist
         run: zip --junk-paths dist.zip dist/*
       - name: Create Release
