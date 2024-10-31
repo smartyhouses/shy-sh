@@ -2,7 +2,8 @@ name: Publish shy-sh to PyPI
 
 on:
   push:
-    - main
+    branches:
+      - main
 
 jobs:
   build:
