@@ -1,6 +1,8 @@
 from shy_sh.settings import settings
+from functools import lru_cache
 
 
+@lru_cache
 def get_llm():
     llm = None
     match settings.llm.provider:

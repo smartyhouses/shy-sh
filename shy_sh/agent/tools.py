@@ -1,9 +1,5 @@
-from typing import Callable, TYPE_CHECKING
+from typing import Callable
 from abc import ABC, abstractmethod
-
-
-if TYPE_CHECKING:
-    from .agent import ShyAgent
 
 
 class Tool(ABC):
@@ -15,14 +11,14 @@ class Tool(ABC):
         self.kwargs = kwargs
 
     @abstractmethod
-    def execute(self, agent: "ShyAgent", payload: str): ...
+    def execute(self, payload: str): ...
 
 
 def tool(*args, **kwargs) -> Tool:
     def decorator(fn: Callable):
         class ToolImpl(Tool):
-            def execute(self, agent: "ShyAgent", payload: str):
-                return fn(agent, payload)
+            def execute(self, payload: str):
+                return fn(payload)
 
         return ToolImpl(fn.__name__, fn.__doc__, **kwargs)
 

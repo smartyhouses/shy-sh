@@ -1,31 +1,18 @@
 import subprocess
 import json
-from typing import Optional
-from textwrap import dedent
 from shy_sh.settings import settings
-from shy_sh.chat_models import get_llm
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
-from pydantic import BaseModel
 from time import strftime
 from rich import print
 from rich.syntax import Syntax
 from rich.live import Live
-from contextlib import redirect_stdout
-from io import StringIO
+from shy_sh.agent.chains.shy_agent import shy_agent_chain
+from shy_sh.agent.chains.python_expert import python_expert_chain
+from shy_sh.agent.chains.bash_exec import bash_exec
+from shy_sh.agent.chains.bash_expert import bash_expert_chain
 
 from .tools import tool
-
-
-class ToolRequest(BaseModel):
-    tool: str
-    arg: str
-    thoughts: Optional[str] = None
-
-
-class FinalResponse(BaseModel):
-    response: str
+from .models import ToolRequest, FinalResponse
 
 
 class ShyAgent:
@@ -37,65 +24,6 @@ class ShyAgent:
         self.ask_before_execute = ask_before_execute
         self.history = []
         self.tools = self._get_tools()
-        self.llm = get_llm()
-        self.sys_template = dedent(
-            """
-            You are a helpfull shell assistant. The current date and time is {timestamp}.
-            Try to resolve the tasks that I request you to do.
-            
-            You can use the following tools to accomplish the tasks:
-            {tools}
-                                
-            Rules:
-            You can use only the tools provided in this prompt to accomplish the tasks
-            If you need to use tools your response must be in JSON format with this structure: {{ "tool": "...", "arg": "...", "thoughts": "..." }}
-            Ensure to gather all the informations that you need using tools and then double check the output of the tools if needed before giving the final answer
-            After you completed the task output your final answer to the task {lang_spec}without including any json
-            Answer truthfully with the informations you have
-            You cannot use tools and complete the task with your final answer in the same message so remember to use the tools that you need first
-            """
-        )
-
-        self.python_expert_template = dedent(
-            """
-            Output only a block of python code like this:
-            ```python
-            [your python code]
-            ```
-
-            Do not wrap your script in if __name__ == "__main__": block
-
-            Write a python script that accomplishes the task.
-            Task: {input}
-            """
-        )
-
-    @property
-    def chain(self):
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", self.sys_template),
-                MessagesPlaceholder("few_shot_examples", optional=True),
-                MessagesPlaceholder("history", optional=True),
-                ("human", "Task: {input}"),
-                MessagesPlaceholder("tool_history", optional=True),
-            ]
-        )
-        return prompt | self.llm | StrOutputParser()
-
-    @property
-    def python_expert_chain(self):
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    "You are a python expert. The current date and time is {timestamp}",
-                ),
-                MessagesPlaceholder("history", optional=True),
-                ("human", self.python_expert_template),
-            ]
-        )
-        return prompt | self.llm | StrOutputParser()
 
     @property
     def formatted_tools(self):
@@ -105,58 +33,21 @@ class ShyAgent:
 
     def _get_tools(self):
         @tool
-        def bash(agent, arg: str):
-            """to execute a bash command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass interactive commands"""
-            print(f"🛠️ [bold green]{arg}[/bold green]")
-            if self.ask_before_execute:
-                confirm = (
-                    input(
-                        "\n[dark_orange]Do you want to execute this command? [Y/n]:[/dark_orange] "
-                    )
-                    or "y"
-                )
-                if confirm.lower() == "n":
-                    return FinalResponse(response="Task interrupted")
-            result = subprocess.run(
-                arg,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                shell=True,
-            )
-            stdout = result.stdout.decode() or result.stderr.decode() or "Success!"
-            print(Syntax(stdout.strip(), "console", background_color="#212121"))
-            return stdout
+        def bash(arg: str):
+            """to execute a bash command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass interactive commands, avoid to install new packages if not explicitly requested"""
+            return bash_exec(arg, self.ask_before_execute)
 
         @tool
-        def python_expert(agent, arg: str):
+        def python_expert(arg: str):
             """to delegate the task to a python expert that can write and execute python code, use only if you cant resolve the task with bash, just forward the task as argument without any python code"""
-            print(f"🐍 [bold yellow]Generating python script...[/bold yellow]\n")
-            code = self.python_expert_chain.invoke(
-                {
-                    "input": arg,
-                    "timestamp": strftime("%Y-%m-%d %H:%M %Z"),
-                    "history": self.history,
-                }
-            )
-            code = code.replace("```python\n", "").replace("```", "")
-            print(Syntax(code.strip(), "python", background_color="#212121"))
-            if self.ask_before_execute:
-                confirm = (
-                    input(
-                        "\n[dark_orange]Do you want to execute this script? [Y/n]:[/dark_orange] "
-                    )
-                    or "y"
-                )
-                if confirm.lower() == "n":
-                    return FinalResponse(response="Task interrupted")
-            stdout = StringIO()
-            with redirect_stdout(stdout):
-                exec(code)
-            output = stdout.getvalue().strip()
-            output = ("\n" + output) if output else "Done"
-            return FinalResponse(response=output)
+            return python_expert_chain(arg, self.history, self.ask_before_execute)
 
-        return [bash, python_expert]
+        @tool
+        def bash_expert(arg: str):
+            """to delegate the task to a bash expert that can write and execute complex bash scripts, use only if you cant resolve the task with a simple bash command, just forward the task as argument without any bash code"""
+            return bash_expert_chain(arg, self.history, self.ask_before_execute)
+
+        return [bash, bash_expert, python_expert]
 
     def _check_json(self, text: str):
         if text.count("{") > 0 and text.count("{") - text.count("}") == 0:
@@ -176,7 +67,7 @@ class ShyAgent:
         if tool is None:
             return f"Tool {action.tool} not found"
         try:
-            tool_answer = tool.execute(self, action.arg)
+            tool_answer = tool.execute(action.arg)
         except Exception as e:
             tool_answer = f"🚨 There was an error: {e}"
         return tool_answer
@@ -238,7 +129,7 @@ class ShyAgent:
         with Live() as live:
             loading = "⏱️  Loading..."
             live.update(loading)
-            for chunk in self.chain.stream(inputs):
+            for chunk in shy_agent_chain.stream(inputs):
                 stream_text += chunk
                 if stream_text.startswith("{"):
                     live.update(loading)
