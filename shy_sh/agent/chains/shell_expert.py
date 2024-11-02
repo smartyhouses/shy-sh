@@ -72,7 +72,12 @@ def shell_expert_chain(task: str, history, ask_before_execute: bool):
             pyperclip.copy(code)
             return FinalResponse(response="Script copied to the clipboard!")
 
-    file_path = f"/tmp/{uuid4().hex}.sh"
+    ext = "sh"
+    if shell == "cmd":
+        ext = "bat"
+    elif shell == "powershell":
+        ext = "ps1"
+    file_path = f"/tmp/{uuid4().hex}.{ext}"
     with open(file_path, "w") as f:
         f.write(code)
     os.chmod(file_path, 0o755)

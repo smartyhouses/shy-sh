@@ -57,7 +57,7 @@ class ShyAgent:
         return [shell, shell_expert, python_expert]
 
     def _check_json(self, text: str):
-        if text.count("{") > 0 and text.count("{") - text.count("}") == 0:
+        if text.count("{") > 0 and text.count("}") > 0:
             first_bracket = text.index("{")
             last_bracket = text.rindex("}")
             maybe_tool = text[first_bracket : last_bracket + 1]
