@@ -48,7 +48,9 @@ Do you want to execute this command? [Y/n/c]:
 > shy -x convert aaa.png to jpeg and resize to 200x200
 
 🛠️ convert aaa.png -resize 200x200 aaa.jpg
+
 Success!
+
 🤖: I converted the file aaa.png to JPEG format and resized it to 200x200 pixels.
 ```
 
