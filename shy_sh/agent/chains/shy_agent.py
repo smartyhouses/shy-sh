@@ -1,7 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import chain
-from shy_sh.chat_models import get_llm
+from shy_sh.agent.chat_models import get_llm
 from textwrap import dedent
 
 sys_template = dedent(
@@ -31,7 +31,7 @@ def shy_agent_chain(_):
             ("system", sys_template),
             MessagesPlaceholder("few_shot_examples", optional=True),
             MessagesPlaceholder("history", optional=True),
-            ("human", "Task: {input}"),
+            ("human", "{input}"),
             MessagesPlaceholder("tool_history", optional=True),
         ]
     )

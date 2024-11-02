@@ -10,6 +10,7 @@ from shy_sh.agent.chains.shy_agent import shy_agent_chain
 from shy_sh.agent.chains.python_expert import python_expert_chain
 from shy_sh.agent.chains.bash_exec import bash_exec
 from shy_sh.agent.chains.bash_expert import bash_expert_chain
+from shy_sh.agent.chains.screenshot import screenshot_chain
 
 from .tools import tool
 from .models import ToolRequest, FinalResponse
@@ -17,11 +18,16 @@ from .models import ToolRequest, FinalResponse
 
 class ShyAgent:
     def __init__(
-        self, max_iterations: int = 4, interactive=False, ask_before_execute=False
+        self,
+        max_iterations: int = 4,
+        interactive=False,
+        ask_before_execute=False,
+        screenshot=False,
     ):
         self.max_iterations = max_iterations
         self.interactive = interactive
         self.ask_before_execute = ask_before_execute
+        self.screenshot = screenshot
         self.history = []
         self.tools = self._get_tools()
 
@@ -106,6 +112,10 @@ class ShyAgent:
         result.append(AIMessage(content="Ok"))
         return result
 
+    def _update_task_with_image(self, task: str):
+        result = screenshot_chain(task)
+        return f"\nContext informations - This is what I'm seeing in my screen right now:\n{result}\n\nTask: {task}"
+
     def _execute(
         self,
         task: str,
@@ -151,6 +161,11 @@ class ShyAgent:
 
     def _run(self, task: str, examples: list[BaseMessage] = []):
         answer = ""
+        if self.screenshot:
+            task = self._update_task_with_image(task)
+            self.screenshot = False
+        else:
+            task = f"Task: {task}"
         for _ in range(self.max_iterations):
             answer = self._execute(task, examples)
 
@@ -182,3 +197,5 @@ class ShyAgent:
                     self.history.append(AIMessage(content=answer))
 
                 self.start(new_task)
+            else:
+                print("🤖: 👋 Bye!")

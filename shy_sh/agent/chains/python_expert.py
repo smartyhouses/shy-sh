@@ -1,3 +1,4 @@
+import pyperclip
 from io import StringIO
 from contextlib import redirect_stdout
 from time import strftime
@@ -6,7 +7,8 @@ from shy_sh.agent.models import FinalResponse
 from langchain_core.runnables import chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from shy_sh.chat_models import get_llm
+from shy_sh.agent.chat_models import get_llm
+from shy_sh.agent.utils import ask_confirm
 from textwrap import dedent
 from rich import print
 
@@ -53,17 +55,15 @@ def python_expert_chain(task: str, history, ask_before_execute: bool):
     code = code.replace("```python\n", "").replace("```", "")
     print(Syntax(code.strip(), "python", background_color="#212121"))
     if ask_before_execute:
-        confirm = (
-            input(
-                "\n[dark_orange]Do you want to execute this script? [Y/n]:[/dark_orange] "
-            )
-            or "y"
-        )
-        if confirm.lower() == "n":
-            return FinalResponse(response="Task interrupted")
+        confirm = ask_confirm()
+        if confirm == "n":
+            return FinalResponse(response="Command canceled by user")
+        elif confirm == "c":
+            pyperclip.copy(code)
+            return FinalResponse(response="Script copied to the clipboard!")
     stdout = StringIO()
     with redirect_stdout(stdout):
         exec(code)
-    output = stdout.getvalue().strip()
-    output = ("\n" + output) if output else "Done"
-    return FinalResponse(response=output)
+    output = stdout.getvalue().strip() or "Done"
+    print(Syntax(output, "python", background_color="#212121"))
+    return f"\nScript executed:\n```python\n{code.strip()}\n```\n\nOutput:\n{output}"

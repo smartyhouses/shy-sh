@@ -15,11 +15,18 @@ def exec(
             help="Interactive mode [default false if a prompt is passed]",
         ),
     ] = False,
-    ask_before_execute: Annotated[
+    no_ask: Annotated[
         Optional[bool],
         typer.Option(
-            "-a",
-            help="Ask confirmation before executing scripts [default false]",
+            "-x",
+            help="Do not ask for confirmation before executing scripts",
+        ),
+    ] = False,
+    screenshot: Annotated[
+        Optional[bool],
+        typer.Option(
+            "-s",
+            help="Take a screenshot of the terminal before the execution",
         ),
     ] = False,
     configure: Annotated[
@@ -41,7 +48,14 @@ def exec(
         interactive = True
     else:
         print(f"✨: {task}\n")
-    ShyAgent(interactive=interactive, ask_before_execute=ask_before_execute).start(task)
+    try:
+        ShyAgent(
+            interactive=interactive,
+            ask_before_execute=not no_ask,
+            screenshot=screenshot,
+        ).start(task)
+    except Exception as e:
+        print(f"🚨 [bold red]{e}[/bold red]")
 
 
 def main():

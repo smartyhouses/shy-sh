@@ -1,12 +1,14 @@
 import os
 import subprocess
+import pyperclip
 from time import strftime
 from rich.syntax import Syntax
 from shy_sh.agent.models import FinalResponse
 from langchain_core.runnables import chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from shy_sh.chat_models import get_llm
+from shy_sh.agent.chat_models import get_llm
+from shy_sh.agent.utils import ask_confirm
 from textwrap import dedent
 from rich import print
 from uuid import uuid4
@@ -55,16 +57,13 @@ def bash_expert_chain(task: str, history, ask_before_execute: bool):
     )
     code = code.replace("```sh\n", "").replace("```", "")
     print(Syntax(code.strip(), "console", background_color="#212121"))
-    print("\n")
     if ask_before_execute:
-        confirm = (
-            input(
-                "\n[dark_orange]Do you want to execute this script? [Y/n]:[/dark_orange] "
-            )
-            or "y"
-        )
-        if confirm.lower() == "n":
+        confirm = ask_confirm()
+        if confirm == "n":
             return FinalResponse(response="Task interrupted")
+        elif confirm == "c":
+            pyperclip.copy(code)
+            return FinalResponse(response="Script copied to the clipboard!")
 
     file_path = f"/tmp/{uuid4().hex}.sh"
     with open(file_path, "w") as f:
