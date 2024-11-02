@@ -53,9 +53,9 @@ Success!
 ```
 
 ```sh
-> shy how many file in this folder
+> shy rescale movie.avi to 1024x768 and save it in mp4
 
-🛠️ ls | wc -l
+🛠️ ffmpeg -i movie.avi -vf scale=1024:768 -c:v libx264 output.mp4
 
 Do you want to execute this command? [Y/n/c]: c
 
