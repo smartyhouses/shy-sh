@@ -78,4 +78,4 @@ def bash_expert_chain(task: str, history, ask_before_execute: bool):
     )
     stdout = result.stdout.decode() or result.stderr.decode() or "Done"
     print(Syntax(stdout.strip(), "console", background_color="#212121"))
-    return f"Script executed!\n{stdout}"
+    return f"Script executed:\n{code}\n\nOutput:\n{stdout}"
