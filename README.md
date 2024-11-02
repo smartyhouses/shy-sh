@@ -12,7 +12,8 @@ prompt [PROMPT]
 Options
 
 - -i Interactive mode [default false if a prompt is passed else true]
-- -a Ask confirmation before executing scripts [default false]
+- -x Do not ask confirmation before executing scripts
+- -s Take a screenshot to be analyzed with the prompt (requires vision model)
 - --configure Configure LLM
 - --help Show this message and exit.
 
@@ -52,7 +53,7 @@ Success!
 ```
 
 ```sh
-> shy how many filer in this folder
+> shy how many file in this folder
 
 🛠️ ls | wc -l
 
@@ -68,7 +69,7 @@ Do you want to execute this command? [Y/n/c]: c
 
 🤖: Hello! I'm fine thanks
 
-✨: how many filer in this folder
+✨: how many file in this folder
 
 🛠️ ls | wc -l
 
