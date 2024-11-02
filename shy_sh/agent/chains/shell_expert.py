@@ -8,22 +8,24 @@ from langchain_core.runnables import chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from shy_sh.agent.chat_models import get_llm
-from shy_sh.agent.utils import ask_confirm
+from shy_sh.agent.utils import ask_confirm, decode_output, detect_shell,detect_os
 from textwrap import dedent
 from rich import print
 from uuid import uuid4
 
+
 sys_template = dedent(
     """
-    Output only a block of python code like this:
+    Output only a block of code like this:
     ```sh
-    #!/bin/bash
+    #!/bin/sh
     set -e
-    [your bash script]
+    [your shell script]
     ```
 
+    This is a template for sh, but you should use the right shell syntaxt depending on your system.
     Don't write interactive commands or install new packages if not explicitly requested.
-    Write a bash script that accomplishes the task.
+    Write a shell script that accomplishes the task.
 
     Task: {input}
     """
@@ -37,7 +39,7 @@ def _chain(_):
         [
             (
                 "system",
-                "You are a bash expert. The current date and time is {timestamp}",
+                "You are a shell expert. The current date and time is {timestamp}\nYou are running on {system} using {shell} as shell",
             ),
             MessagesPlaceholder("history", optional=True),
             ("human", sys_template),
@@ -46,13 +48,17 @@ def _chain(_):
     return prompt | llm | StrOutputParser()
 
 
-def bash_expert_chain(task: str, history, ask_before_execute: bool):
-    print(f"👨‍💻 [bold yellow]Generating bash script...[/bold yellow]\n{task}\n\n")
+def shell_expert_chain(task: str, history, ask_before_execute: bool):
+    print(f"👨‍💻 [bold yellow]Generating shell script...[/bold yellow]\n{task}\n\n")
+    shell = detect_shell()
+    system = detect_os()
     code = _chain.invoke(
         {
             "input": task,
             "timestamp": strftime("%Y-%m-%d %H:%M %Z"),
             "history": history,
+            "system": system,
+            "shell": shell
         }
     )
     code = code.replace("```sh\n", "").replace("```", "")
@@ -75,6 +81,6 @@ def bash_expert_chain(task: str, history, ask_before_execute: bool):
         stderr=subprocess.PIPE,
         shell=True,
     )
-    stdout = result.stdout.decode() or result.stderr.decode() or "Done"
+    stdout = decode_output(result) or "Done"
     print(Syntax(stdout.strip(), "console", background_color="#212121"))
     return f"Script executed:\n{code}\n\nOutput:\n{stdout}"

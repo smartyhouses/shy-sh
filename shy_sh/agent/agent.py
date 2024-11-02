@@ -8,9 +8,10 @@ from rich.syntax import Syntax
 from rich.live import Live
 from shy_sh.agent.chains.shy_agent import shy_agent_chain
 from shy_sh.agent.chains.python_expert import python_expert_chain
-from shy_sh.agent.chains.bash_exec import bash_exec
-from shy_sh.agent.chains.bash_expert import bash_expert_chain
+from shy_sh.agent.chains.shell_exec import shell_exec
+from shy_sh.agent.chains.shell_expert import shell_expert_chain
 from shy_sh.agent.chains.screenshot import screenshot_chain
+from shy_sh.agent.utils import decode_output, detect_os, detect_shell
 
 from .tools import tool
 from .models import ToolRequest, FinalResponse
@@ -39,21 +40,21 @@ class ShyAgent:
 
     def _get_tools(self):
         @tool
-        def bash(arg: str):
-            """to execute a bash command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass interactive commands, avoid to install new packages if not explicitly requested"""
-            return bash_exec(arg, self.ask_before_execute)
+        def shell(arg: str):
+            """to execute a shell command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass interactive commands, avoid to install new packages if not explicitly requested"""
+            return shell_exec(arg, self.ask_before_execute)
 
         @tool
         def python_expert(arg: str):
-            """to delegate the task to a python expert that can write and execute python code, use only if you cant resolve the task with bash, just forward the task as argument without any python code"""
+            """to delegate the task to a python expert that can write and execute python code, use only if you cant resolve the task with shell, just forward the task as argument without any python code"""
             return python_expert_chain(arg, self.history, self.ask_before_execute)
 
         @tool
-        def bash_expert(arg: str):
-            """to delegate the task to a bash expert that can write and execute complex bash scripts, use only if you cant resolve the task with a simple bash command, just forward the task as argument without any bash code"""
-            return bash_expert_chain(arg, self.history, self.ask_before_execute)
+        def shell_expert(arg: str):
+            """to delegate the task to a shell expert that can write and execute complex shell scripts, use only if you cant resolve the task with a simple shell command, just forward the task as argument without any shell code"""
+            return shell_expert_chain(arg, self.history, self.ask_before_execute)
 
-        return [bash, bash_expert, python_expert]
+        return [shell, shell_expert, python_expert]
 
     def _check_json(self, text: str):
         if text.count("{") > 0 and text.count("{") - text.count("}") == 0:
@@ -79,25 +80,22 @@ class ShyAgent:
         return tool_answer
 
     def _get_few_shot_examples(self):
+        shell = detect_shell()
+        os = detect_os()
         actions = [
             {
-                "tool": "bash",
-                "arg": "echo $OSTYPE",
-                "thoughts": "I'm trying to find out the operating system type",
-            },
-            {
-                "tool": "bash",
-                "arg": "pwd",
+                "tool": "shell",
+                "arg": "echo %cd%" if shell in ['powershell','cmd'] else "pwd",
                 "thoughts": "I'm checking the current working directory",
             },
             {
-                "tool": "bash",
+                "tool": "shell",
                 "arg": "git rev-parse --abbrev-ref HEAD",
                 "thoughts": "I'm checking if it's a git repository",
             },
         ]
         result = []
-        result.append(HumanMessage(content="Tools check"))
+        result.append(HumanMessage(content=f"You are on {os} system using {shell} as shell. Check your tools"))
         for action in actions:
             result.append(AIMessage(content=json.dumps(action)))
             response = subprocess.run(
@@ -106,7 +104,7 @@ class ShyAgent:
                 stderr=subprocess.PIPE,
                 shell=True,
             )
-            response = response.stdout.decode() or response.stderr.decode()
+            response = decode_output(response)
 
             result.append(HumanMessage(content=f"Tool response:\n{response}"))
         result.append(AIMessage(content="Ok"))
