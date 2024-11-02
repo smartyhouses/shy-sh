@@ -51,7 +51,7 @@ class ShyAgent:
 
         @tool
         def shell_expert(arg: str):
-            """to delegate the task to a shell expert that can write and execute complex shell scripts, use only if you cant resolve the task with a simple shell command, just forward the task as argument without any shell code"""
+            """to delegate the task to a shell expert that can write and execute long and complex shell scripts, use only if you cant resolve the task with a simple shell command, just forward the task as argument without any shell code"""
             return shell_expert_chain(arg, self.history, self.ask_before_execute)
 
         return [shell, shell_expert, python_expert]
