@@ -85,7 +85,7 @@ class ShyAgent:
         actions = [
             {
                 "tool": "shell",
-                "arg": "echo %cd%" if shell in ['powershell','cmd'] else "pwd",
+                "arg": "echo %cd%" if shell in ["powershell", "cmd"] else "pwd",
                 "thoughts": "I'm checking the current working directory",
             },
             {
@@ -95,7 +95,11 @@ class ShyAgent:
             },
         ]
         result = []
-        result.append(HumanMessage(content=f"You are on {os} system using {shell} as shell. Check your tools"))
+        result.append(
+            HumanMessage(
+                content=f"You are on {os} system using {shell} as shell. Check your tools"
+            )
+        )
         for action in actions:
             result.append(AIMessage(content=json.dumps(action)))
             response = subprocess.run(

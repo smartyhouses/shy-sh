@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import pyperclip
 from time import strftime
@@ -8,7 +9,7 @@ from langchain_core.runnables import chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from shy_sh.agent.chat_models import get_llm
-from shy_sh.agent.utils import ask_confirm, decode_output, detect_shell,detect_os
+from shy_sh.agent.utils import ask_confirm, decode_output, detect_shell, detect_os
 from textwrap import dedent
 from rich import print
 from uuid import uuid4
@@ -58,10 +59,10 @@ def shell_expert_chain(task: str, history, ask_before_execute: bool):
             "timestamp": strftime("%Y-%m-%d %H:%M %Z"),
             "history": history,
             "system": system,
-            "shell": shell
+            "shell": shell,
         }
     )
-    code = code.replace("```sh\n", "").replace("```", "")
+    code = re.sub(r"```\S+\n", "", code).replace("```", "")
     print(Syntax(code.strip(), "console", background_color="#212121"))
     if ask_before_execute:
         confirm = ask_confirm()
