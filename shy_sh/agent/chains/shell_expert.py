@@ -1,5 +1,6 @@
 import os
 import re
+from tempfile import NamedTemporaryFile
 import subprocess
 import pyperclip
 from time import strftime
@@ -72,21 +73,21 @@ def shell_expert_chain(task: str, history, ask_before_execute: bool):
             pyperclip.copy(code)
             return FinalResponse(response="Script copied to the clipboard!")
 
-    ext = "sh"
+    ext = ".sh"
     if shell == "cmd":
-        ext = "bat"
+        ext = ".bat"
     elif shell == "powershell":
-        ext = "ps1"
-    file_path = f"/tmp/{uuid4().hex}.{ext}"
-    with open(file_path, "w") as f:
-        f.write(code)
-    os.chmod(file_path, 0o755)
-    result = subprocess.run(
-        file_path,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-    )
-    stdout = decode_output(result) or "Done"
+        ext = ".ps1"
+    with NamedTemporaryFile('w+', suffix=ext, delete_on_close=False) as file:
+        file.write(code)
+        file.close()
+        os.chmod(file.name, 0o755)
+        result = subprocess.run(
+            file.name,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+        )
+        stdout = decode_output(result) or "Done"
     print(Syntax(stdout.strip(), "console", background_color="#212121"))
     return f"Script executed:\n{code}\n\nOutput:\n{stdout}"
