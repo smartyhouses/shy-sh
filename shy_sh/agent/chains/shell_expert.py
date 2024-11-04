@@ -50,7 +50,7 @@ def _chain(_):
 
 
 def shell_expert_chain(task: str, history, ask_before_execute: bool):
-    print(f"👨‍💻 [bold yellow]Generating shell script...[/bold yellow]\n")
+    print(f"💻 [bold yellow]Generating shell script...[/bold yellow]\n")
     shell = detect_shell()
     system = detect_os()
     code = _chain.invoke(
