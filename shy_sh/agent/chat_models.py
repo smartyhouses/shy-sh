@@ -72,3 +72,36 @@ def get_llm():
                 model_kwargs={"temperature": settings.llm.temperature},
             )
     return llm
+
+
+DEFAULT_CONTEXT_LEN = 8192
+LLM_CONTEXT_WINDOWS = {
+    "openai": {
+        "default": 128000,
+    },
+    "ollama": {
+        "default": DEFAULT_CONTEXT_LEN,
+    },
+    "groq": {
+        "default": DEFAULT_CONTEXT_LEN,
+    },
+    "anthropic": {
+        "default": 128000,
+    },
+    "google": {
+        "default": 128000,
+    },
+    "aws": {
+        "default": 128000,
+    },
+}
+
+
+def get_llm_context():
+    provider = LLM_CONTEXT_WINDOWS.get(settings.llm.provider, None)
+    if not provider:
+        return DEFAULT_CONTEXT_LEN
+    return provider.get(
+        settings.llm.name,
+        provider.get("default", DEFAULT_CONTEXT_LEN),
+    )

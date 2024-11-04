@@ -13,7 +13,6 @@ from shy_sh.agent.chat_models import get_llm
 from shy_sh.agent.utils import ask_confirm, decode_output, detect_shell, detect_os
 from textwrap import dedent
 from rich import print
-from uuid import uuid4
 
 
 sys_template = dedent(
@@ -51,7 +50,7 @@ def _chain(_):
 
 
 def shell_expert_chain(task: str, history, ask_before_execute: bool):
-    print(f"👨‍💻 [bold yellow]Generating shell script...[/bold yellow]\n{task}\n\n")
+    print(f"👨‍💻 [bold yellow]Generating shell script...[/bold yellow]\n")
     shell = detect_shell()
     system = detect_os()
     code = _chain.invoke(
@@ -78,7 +77,7 @@ def shell_expert_chain(task: str, history, ask_before_execute: bool):
         ext = ".bat"
     elif shell == "powershell":
         ext = ".ps1"
-    with NamedTemporaryFile('w+', suffix=ext, delete_on_close=False) as file:
+    with NamedTemporaryFile("w+", suffix=ext, delete_on_close=False) as file:
         file.write(code)
         file.close()
         os.chmod(file.name, 0o755)

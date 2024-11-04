@@ -65,5 +65,5 @@ def python_expert_chain(task: str, history, ask_before_execute: bool):
     with redirect_stdout(stdout):
         exec(code)
     output = stdout.getvalue().strip() or "Done"
-    print(Syntax(output, "python", background_color="#212121"))
+    print(Syntax(output, "console", background_color="#212121"))
     return f"\nScript executed:\n```python\n{code.strip()}\n```\n\nOutput:\n{output}"

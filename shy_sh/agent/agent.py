@@ -11,7 +11,8 @@ from shy_sh.agent.chains.python_expert import python_expert_chain
 from shy_sh.agent.chains.shell_exec import shell_exec
 from shy_sh.agent.chains.shell_expert import shell_expert_chain
 from shy_sh.agent.chains.screenshot import screenshot_chain
-from shy_sh.agent.utils import decode_output, detect_os, detect_shell
+from shy_sh.agent.utils import decode_output, detect_os, detect_shell, count_tokens
+from shy_sh.agent.chat_models import get_llm_context
 
 from .tools import tool
 from .models import ToolRequest, FinalResponse
@@ -74,6 +75,7 @@ class ShyAgent:
         if tool is None:
             return f"Tool {action.tool} not found"
         try:
+            print()
             tool_answer = tool.execute(action.arg)
         except Exception as e:
             tool_answer = f"🚨 There was an error: {e}"
@@ -117,6 +119,15 @@ class ShyAgent:
     def _update_task_with_image(self, task: str):
         result = screenshot_chain(task)
         return f"\nContext informations - This is what I'm seeing in my screen right now:\n{result}\n\nTask: {task}"
+
+    def _compress_history(self):
+        max_len = get_llm_context()
+        tokens = count_tokens(self.history + self.tool_history)
+        while tokens > max_len:
+            self.history = self.history[2:]
+            if not self.history:
+                break
+            tokens = count_tokens(self.history + self.tool_history)
 
     def _execute(
         self,
@@ -169,6 +180,7 @@ class ShyAgent:
         else:
             task = f"Task: {task}"
         for _ in range(self.max_iterations):
+            self._compress_history()
             answer = self._execute(task, examples)
 
             if isinstance(answer, FinalResponse):
@@ -191,7 +203,6 @@ class ShyAgent:
             )
         if self.interactive:
             new_task = input("\n✨: ")
-            print()
             if new_task != "exit":
                 self.history.append(HumanMessage(content=task))
                 self.history += self.tool_history
