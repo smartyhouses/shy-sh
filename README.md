@@ -13,7 +13,7 @@ Options
 
 - -i Interactive mode [default false if a prompt is passed else true]
 - -x Do not ask confirmation before executing scripts
-- -s Take a screenshot to be analyzed with the prompt (requires vision model)
+- -s or start your message with /screen: Take a screenshot to be analyzed with the prompt (requires vision model)
 - --configure Configure LLM
 - --help Show this message and exit.
 

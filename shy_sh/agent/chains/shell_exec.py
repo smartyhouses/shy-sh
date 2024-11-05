@@ -8,13 +8,15 @@ from rich import print
 
 def shell_exec(arg: str, ask_before_execute: bool):
     print(f"🛠️ [bold green]{arg}[/bold green]")
+    confirm = "y"
     if ask_before_execute:
         confirm = ask_confirm()
-        if confirm == "n":
-            return FinalResponse(response="Task interrupted")
-        elif confirm == "c":
-            pyperclip.copy(arg)
-            return FinalResponse(response="Command copied to the clipboard!")
+    print()
+    if confirm == "n":
+        return FinalResponse(response="Task interrupted")
+    elif confirm == "c":
+        pyperclip.copy(arg)
+        return FinalResponse(response="Command copied to the clipboard!")
 
     result = subprocess.run(
         arg,

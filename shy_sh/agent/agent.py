@@ -75,7 +75,6 @@ class ShyAgent:
         if tool is None:
             return f"Tool {action.tool} not found"
         try:
-            print()
             tool_answer = tool.execute(action.arg)
         except Exception as e:
             tool_answer = f"🚨 There was an error: {e}"
@@ -157,10 +156,19 @@ class ShyAgent:
                 if stream_text.startswith("{"):
                     live.update(loading)
                 else:
-                    live.update(f"🤖: {stream_text}", refresh=True)
+                    live.update(
+                        Syntax(
+                            f"\n🤖: {stream_text.strip()}",
+                            "console",
+                            theme="one-dark",
+                            background_color="#181818",
+                        ),
+                        refresh=True,
+                    )
                 result = self._check_json(stream_text)
                 if isinstance(result, ToolRequest):
                     live.update("")
+                    live.stop()
                     self.tool_history.append(
                         AIMessage(content=result.model_dump_json())
                     )
@@ -168,8 +176,16 @@ class ShyAgent:
                     self.tool_history.append(
                         HumanMessage(content=f"Tool response:\n{result}")
                     )
+                    if isinstance(result, FinalResponse):
+                        print(
+                            Syntax(
+                                f"🤖: {result.response}",
+                                "console",
+                                theme="one-dark",
+                                background_color="#181818",
+                            )
+                        )
                     return result
-            live.update("")
         return FinalResponse(response=result)
 
     def _run(self, task: str, examples: list[BaseMessage] = []):
@@ -193,16 +209,11 @@ class ShyAgent:
         answer = None
         if task:
             answer = self._run(task, examples)
-            print(
-                Syntax(
-                    f"🤖: {answer}",
-                    "console",
-                    theme="one-dark",
-                    background_color="#181818",
-                )
-            )
         if self.interactive:
             new_task = input("\n✨: ")
+            if new_task.startswith("/screen"):
+                new_task = new_task.replace("/screen", "", 1).strip()
+                self.screenshot = True
             if new_task != "exit":
                 self.history.append(HumanMessage(content=task))
                 self.history += self.tool_history
@@ -211,4 +222,4 @@ class ShyAgent:
 
                 self.start(new_task)
             else:
-                print("🤖: 👋 Bye!")
+                print("\n🤖: 👋 Bye!")

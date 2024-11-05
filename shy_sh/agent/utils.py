@@ -2,15 +2,17 @@ from typing import Literal
 import platform
 import os
 from tiktoken import get_encoding
+from rich.prompt import Prompt
 
 
 def ask_confirm() -> Literal["y", "n", "c"]:
-    return (
-        input(
-            "\n[dark_orange]Do you want to execute this command? [Y/n/c]:[/dark_orange] "
-        )
-        or "y"
-    )[0].lower()
+    return Prompt.ask(
+        "\n[dark_orange]Do you want to execute this command?[/dark_orange]",
+        choices=["Y", "n", "c"],
+        default="y",
+        show_default=False,
+        case_sensitive=False,
+    ).lower()
 
 
 def decode_output(process):

@@ -11,6 +11,7 @@ from shy_sh.agent.chat_models import get_llm
 from shy_sh.agent.utils import ask_confirm
 from textwrap import dedent
 from rich import print
+from rich.live import Live
 
 sys_template = dedent(
     """
@@ -45,22 +46,31 @@ def _chain(_):
 
 def python_expert_chain(task: str, history, ask_before_execute: bool):
     print(f"🐍 [bold yellow]Generating python script...[/bold yellow]\n")
-    code = _chain.invoke(
-        {
-            "input": task,
-            "timestamp": strftime("%Y-%m-%d %H:%M %Z"),
-            "history": history,
-        }
-    )
-    code = code.replace("```python\n", "").replace("```", "")
-    print(Syntax(code.strip(), "python", background_color="#212121"))
+    inputs = {
+        "input": task,
+        "timestamp": strftime("%Y-%m-%d %H:%M %Z"),
+        "history": history,
+    }
+    code = ""
+    with Live() as live:
+        for chunk in _chain.stream(inputs):
+            code += chunk
+            live.update(
+                Syntax(code, "python", background_color="#212121"), refresh=True
+            )
+        code = code.replace("```python\n", "").replace("```", "")
+        live.update(Syntax(code.strip(), "python", background_color="#212121"))
+
+    confirm = "y"
     if ask_before_execute:
         confirm = ask_confirm()
-        if confirm == "n":
-            return FinalResponse(response="Command canceled by user")
-        elif confirm == "c":
-            pyperclip.copy(code)
-            return FinalResponse(response="Script copied to the clipboard!")
+    print()
+    if confirm == "n":
+        return FinalResponse(response="Command canceled by user")
+    elif confirm == "c":
+        pyperclip.copy(code)
+        return FinalResponse(response="Script copied to the clipboard!")
+
     stdout = StringIO()
     with redirect_stdout(stdout):
         exec(code)
