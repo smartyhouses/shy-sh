@@ -47,7 +47,7 @@ def exec(
     if not task:
         interactive = True
     else:
-        print(f"✨: {task}\n")
+        print(f"\n✨: {task}\n")
     try:
         ShyAgent(
             interactive=interactive,
