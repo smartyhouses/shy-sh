@@ -1,7 +1,7 @@
 import os
 import yaml
 
-from typing import Type, Any
+from typing import Type, Any, Literal
 
 from pydantic_settings import (
     BaseSettings,
@@ -16,6 +16,7 @@ from rich.prompt import Prompt, FloatPrompt
 class LLMSchema(BaseModel):
     provider: str
     name: str
+    agent_pattern: Literal["function_call", "react"] = "function_call"
     api_key: str = ""
     temperature: float = 0.0
 

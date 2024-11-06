@@ -56,6 +56,7 @@ def exec(
         ).start(task)
     except Exception as e:
         print(f"🚨 [bold red]{e}[/bold red]")
+        raise e
 
 
 def main():

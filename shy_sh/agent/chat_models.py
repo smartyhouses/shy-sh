@@ -15,7 +15,7 @@ def get_llm():
                 api_key=settings.llm.api_key,
             )
         case "ollama":
-            from langchain_community.chat_models.ollama import ChatOllama
+            from langchain_ollama.chat_models import ChatOllama
 
             llm = ChatOllama(
                 model=settings.llm.name, temperature=settings.llm.temperature

@@ -1,6 +1,7 @@
-from typing import Literal
-import platform
 import os
+import platform
+import subprocess
+from typing import Literal
 from tiktoken import get_encoding
 from rich.prompt import Prompt
 
@@ -26,6 +27,16 @@ def decode_output(process):
         encoding = "cp" + str(oemCP)
         response = process.stdout.decode(encoding) or process.stderr.decode(encoding)
     return response
+
+
+def run_shell(cmd: str):
+    result = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+    )
+    return decode_output(result)
 
 
 def detect_shell():
