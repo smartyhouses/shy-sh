@@ -1,10 +1,10 @@
 from uuid import uuid4
-from langchain_core.messages import ToolMessage
+from langchain_core.messages import ToolMessage, HumanMessage
 from rich import print
 from shy_sh.models import State
-from shy_sh.agent.tools import tools_by_name
+from shy_sh.agents.tools import tools_by_name
 from shy_sh.settings import settings
-from shy_sh.agent.nodes.utils import parse_react_tool
+from shy_sh.agents.misc import parse_react_tool
 
 
 def tools_handler(state: State):
@@ -24,6 +24,11 @@ def tools_handler(state: State):
         except Exception as e:
             print(f"[bold red]🚨 Tool error: {e}[/bold red]")
             message = ToolMessage(f"Tool error: {e}", tool_call_id=t_call["id"])
+
+        if settings.llm.agent_pattern == "react":
+            m = HumanMessage(content=f"Tool response:\n{message.content}")
+            m.artifact = getattr(message, "artifact", None)
+            message = m
         tool_answers.append(message)
     return {"tool_history": tool_answers}
 

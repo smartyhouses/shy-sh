@@ -7,7 +7,7 @@ def get_llm():
     llm = None
     match settings.llm.provider:
         case "openai":
-            from langchain.chat_models.openai import ChatOpenAI
+            from langchain_openai import ChatOpenAI
 
             llm = ChatOpenAI(
                 model=settings.llm.name,
@@ -15,7 +15,7 @@ def get_llm():
                 api_key=settings.llm.api_key,
             )
         case "ollama":
-            from langchain_ollama.chat_models import ChatOllama
+            from langchain_ollama import ChatOllama
 
             llm = ChatOllama(
                 model=settings.llm.name, temperature=settings.llm.temperature
@@ -31,7 +31,7 @@ def get_llm():
             )
 
         case "anthropic":
-            from langchain_community.chat_models.anthropic import ChatAnthropic
+            from langchain_anthropic import ChatAnthropic
 
             llm = ChatAnthropic(
                 model_name=settings.llm.name,
@@ -54,22 +54,16 @@ def get_llm():
             )
 
         case "aws":
-            from langchain_aws import ChatBedrock
-            import boto3
+            from langchain_aws import ChatBedrockConverse
 
             region, access_key, secret_key = settings.llm.api_key.split(" ")
 
-            boto_client = boto3.client(
-                "bedrock-runtime",
+            llm = ChatBedrockConverse(
+                model=settings.llm.name,
+                temperature=settings.llm.temperature,
+                region_name=region,
                 aws_access_key_id=access_key,
                 aws_secret_access_key=secret_key,
-                region_name=region,
-            )
-
-            llm = ChatBedrock(
-                model_id=settings.llm.name,
-                client=boto_client,
-                model_kwargs={"temperature": settings.llm.temperature},
             )
     return llm
 
@@ -77,7 +71,7 @@ def get_llm():
 DEFAULT_CONTEXT_LEN = 8192
 LLM_CONTEXT_WINDOWS = {
     "openai": {
-        "default": 128000,
+        "default": DEFAULT_CONTEXT_LEN * 4,
     },
     "ollama": {
         "default": DEFAULT_CONTEXT_LEN,
@@ -86,13 +80,13 @@ LLM_CONTEXT_WINDOWS = {
         "default": DEFAULT_CONTEXT_LEN,
     },
     "anthropic": {
-        "default": 128000,
+        "default": DEFAULT_CONTEXT_LEN * 4,
     },
     "google": {
-        "default": 128000,
+        "default": DEFAULT_CONTEXT_LEN * 4,
     },
     "aws": {
-        "default": 128000,
+        "default": DEFAULT_CONTEXT_LEN * 4,
     },
 }
 

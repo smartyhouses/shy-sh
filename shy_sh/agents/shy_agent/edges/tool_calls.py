@@ -1,6 +1,6 @@
 from langgraph.graph import END
 from shy_sh.models import State
-from shy_sh.agent.nodes.utils import has_tool_calls
+from shy_sh.agents.misc import has_tool_calls
 
 
 def tool_calls_edge(state: State):

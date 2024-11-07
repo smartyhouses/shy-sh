@@ -1,8 +1,8 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import chain
-from shy_sh.agent.chat_models import get_llm
+from shy_sh.agents.llms import get_llm
 from shy_sh.settings import settings
-from shy_sh.agent.tools import tools
+from shy_sh.agents.tools import tools
 from textwrap import dedent
 
 SYS_TEMPLATES = {

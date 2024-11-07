@@ -4,7 +4,7 @@ from uuid import uuid4
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from shy_sh.settings import settings
 from shy_sh.utils import detect_shell, detect_os, run_shell
-from shy_sh.agent.tools import tools
+from shy_sh.agents.tools import tools
 from shy_sh.models import ToolRequest
 
 
@@ -66,7 +66,7 @@ def run_few_shot_examples():
         )
     )
     for action in actions:
-        uid = uuid4().hex
+        uid = str(uuid4())
         ai_message, response = _run_example(action, uid)
         result.append(ai_message)
         if settings.llm.agent_pattern == "react":
@@ -78,16 +78,20 @@ def run_few_shot_examples():
 
 
 def _run_example(action, uid):
-    ai_message = AIMessage(content=json.dumps(action))
-    if settings.llm.agent_pattern == "function_call":
-        ai_message.tool_calls = [
+    ai_message = AIMessage(
+        content="",
+        tool_calls=[
             {
-                "name": action["tool"],
-                "args": {"arg": action["arg"]},
                 "id": uid,
                 "type": "tool_call",
+                "name": action["tool"],
+                "args": {"arg": action["arg"]},
             }
-        ]
+        ],
+    )
+    if settings.llm.agent_pattern == "react":
+        ai_message.content = json.dumps(action)
+        ai_message.tool_calls = []
     return ai_message, run_shell(action["arg"])
 
 

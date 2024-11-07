@@ -69,6 +69,12 @@ def configure_yaml():
         show_choices=True,
         choices=PROVIDERS,
     )
+    agent_pattern = Prompt.ask(
+        "[green bold]Agent Pattern[/]",
+        default=settings.llm.agent_pattern,
+        show_choices=True,
+        choices=["function_call", "react"],
+    )
     name = Prompt.ask(
         "[green bold]Model[/]",
         default=settings.llm.name,
@@ -97,6 +103,7 @@ def configure_yaml():
                 {
                     "llm": {
                         "provider": provider,
+                        "agent_pattern": agent_pattern,
                         "name": name,
                         "api_key": api_key,
                         "temperature": temperature,

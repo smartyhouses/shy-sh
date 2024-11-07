@@ -1,15 +1,16 @@
-from langchain_core.messages import HumanMessage
 from rich import print
-from shy_sh.agent.graph import graph
-from shy_sh.agent.nodes.utils import get_graph_inputs, run_few_shot_examples
-from shy_sh.agent.chains.screenshot import screenshot_chain
+from rich.live import Live
+from rich.syntax import Syntax
+from shy_sh.agents.shy_agent.graph import shy_agent_graph
+from shy_sh.agents.misc import get_graph_inputs, run_few_shot_examples
+from shy_sh.agents.chains.screenshot import screenshot_chain
 
 
 class ShyAgent:
     def __init__(
         self,
         interactive=False,
-        ask_before_execute=False,
+        ask_before_execute=True,
         screenshot=False,
     ):
         self.interactive = interactive
@@ -19,7 +20,15 @@ class ShyAgent:
         self.examples = run_few_shot_examples()
 
     def _update_task_with_image(self, task: str):
-        result = screenshot_chain(task)
+        print(f"📸 [bold yellow]Taking a screenshot...[/bold yellow]\n")
+        result = ""
+        with Live() as live:
+            for chunk in screenshot_chain.stream(
+                {"input": task, "history": self.history}
+            ):
+                result += chunk
+                live.update(f"[grey42]👀 {result}[/]", refresh=True)
+        print()
         return f"\nContext informations - This is what I'm seeing in my screen right now:\n{result}\n\nTask: {task}"
 
     def _run(self, task: str):
@@ -33,7 +42,7 @@ class ShyAgent:
             ask_before_execute=self.ask_before_execute,
         )
 
-        res = graph.invoke(inputs)
+        res = shy_agent_graph.invoke(inputs)
         self.history += res["tool_history"]
 
     def start(self, task: str):

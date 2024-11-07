@@ -1,7 +1,7 @@
 import typer
 from typing import Optional, Annotated
 from importlib.metadata import version
-from shy_sh.agent.agent import ShyAgent
+from shy_sh.agents.agent import ShyAgent
 from shy_sh.settings import settings, configure_yaml
 from rich import print
 
@@ -56,7 +56,6 @@ def exec(
         ).start(task)
     except Exception as e:
         print(f"🚨 [bold red]{e}[/bold red]")
-        raise e
 
 
 def main():
