@@ -5,7 +5,7 @@ from shy_sh.agents.llms import get_llm
 from textwrap import dedent
 
 
-sys_template = dedent(
+msg_template = dedent(
     """
     Output only a block of code like this:
     ```sh
@@ -33,7 +33,7 @@ def shexpert_chain(_):
                 "You are a shell expert. The current date and time is {timestamp}\nYou are running on {system} using {shell} as shell",
             ),
             MessagesPlaceholder("history", optional=True),
-            ("human", sys_template),
+            ("human", msg_template),
         ]
     )
     return prompt | llm | StrOutputParser()

@@ -11,7 +11,7 @@ from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
 from shy_sh.utils import ask_confirm, detect_shell, detect_os
 from shy_sh.agents.chains.shell_expert import shexpert_chain
-from shy_sh.utils import run_shell
+from shy_sh.utils import run_shell, tools_to_human
 
 
 @tool(response_format="content_and_artifact")
@@ -21,10 +21,11 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
     shell = detect_shell()
     system = detect_os()
     inputs = {
-        **state,
         "input": arg,
         "system": system,
         "shell": shell,
+        "timestamp": state["timestamp"],
+        "history": tools_to_human(state["tool_history"]),
     }
     code = ""
     with Live() as live:
@@ -34,7 +35,8 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
                 Syntax(code, "console", background_color="#212121"), refresh=True
             )
 
-        code = re.sub(r"```\S+\n", "", code).replace("```", "")
+        code = re.sub(r"```\S+\n", "", code)
+        code = code[: code.rfind("```")]
         live.update(
             Syntax(code.strip(), "console", background_color="#212121"), refresh=True
         )

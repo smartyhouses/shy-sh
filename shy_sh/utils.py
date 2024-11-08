@@ -4,6 +4,7 @@ import subprocess
 from typing import Literal
 from tiktoken import get_encoding
 from rich.prompt import Prompt
+from langchain_core.messages import HumanMessage, ToolMessage
 
 
 def ask_confirm() -> Literal["y", "n", "c"]:
@@ -60,3 +61,9 @@ def count_tokens(
     text = "\n".join(msg.content for msg in messages)
     encoding = get_encoding(encoding_name)
     return len(encoding.encode(text)) + offset
+
+
+def tools_to_human(messages):
+    return [
+        HumanMessage(msg.content) for msg in messages if isinstance(msg, ToolMessage)
+    ]

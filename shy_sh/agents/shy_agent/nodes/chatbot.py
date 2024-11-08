@@ -1,4 +1,5 @@
 from langchain_core.messages import AIMessage
+from langchain_core.output_parsers import StrOutputParser
 from shy_sh.settings import settings
 from shy_sh.models import State
 from shy_sh.agents.llms import get_llm_context
@@ -18,23 +19,24 @@ loading_str = "⏱️ Loading..."
 
 
 def chatbot(state: State):
-    message = ""
-    tool_calls = []
+    final_message = None
     history = _compress_history(state["history"], state["tool_history"])
     with Live() as live:
         live.update(loading_str)
         for chunk in shy_agent_chain.stream({**state, "history": history}):
-            message += chunk.content
-            if not message.startswith("{") or settings.llm.agent_pattern != "react":
+            final_message = chunk if final_message is None else final_message + chunk
+            message = _parse_chunk_message(final_message)
+            if _maybe_have_tool_calls(final_message, message):
+                live.update(loading_str)
+            else:
                 live.update(
                     Syntax(f"🤖: {message}", **console_theme),
                     refresh=True,
                 )
-            elif message.startswith("{") and settings.llm.agent_pattern == "react":
-                live.update(loading_str)
-            if hasattr(chunk, "tool_calls"):
-                tool_calls += chunk.tool_calls
-        ai_mmessage = AIMessage(content=message, tool_calls=tool_calls)
+        message = _parse_chunk_message(final_message)
+        ai_mmessage = AIMessage(
+            content=message, tool_calls=getattr(final_message, "tool_calls", [])
+        )
         if has_tool_calls(ai_mmessage):
             live.update("")
         else:
@@ -42,6 +44,21 @@ def chatbot(state: State):
                 Syntax(f"🤖: {message}", **console_theme),
             )
     return {"tool_history": [ai_mmessage]}
+
+
+def _maybe_have_tool_calls(message, parsed_message):
+    return (
+        not message.content
+        or getattr(message, "tool_calls", None)
+        or (parsed_message.startswith("{") and settings.llm.agent_pattern == "react")
+    )
+
+
+def _parse_chunk_message(chunk):
+    if isinstance(chunk.content, list):
+        return "".join(c.get("text") for c in chunk.content if c.get("type") == "text")
+    else:
+        return chunk.content
 
 
 def _compress_history(history, tool_history):

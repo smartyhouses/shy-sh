@@ -4,7 +4,7 @@ from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from shy_sh.agents.llms import get_llm
 from textwrap import dedent
 
-sys_template = dedent(
+msg_template = dedent(
     """
     Output only a block of python code like this:
     ```python
@@ -27,7 +27,7 @@ def pyexpert_chain(_):
                 "You are a python expert. The current date and time is {timestamp}",
             ),
             MessagesPlaceholder("history", optional=True),
-            ("human", sys_template),
+            ("human", msg_template),
         ]
     )
     return prompt | llm | StrOutputParser()

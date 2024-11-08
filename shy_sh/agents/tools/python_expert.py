@@ -8,7 +8,7 @@ from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from contextlib import redirect_stdout, redirect_stderr
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm
+from shy_sh.utils import ask_confirm, tools_to_human
 from shy_sh.agents.chains.python_expert import pyexpert_chain
 
 
@@ -17,7 +17,8 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
     """to delegate the task to a python expert that can write and execute python code, use only if you cant resolve the task with shell, just explain what do you want to achieve in a short sentence in the arg without including any python code"""
     print(f"🐍 [bold yellow]Generating python script...[/bold yellow]\n")
     inputs = {
-        **state,
+        "timestamp": state["timestamp"],
+        "history": tools_to_human(state["tool_history"]),
         "input": arg,
     }
     code = ""
@@ -27,7 +28,8 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
             live.update(
                 Syntax(code, "python", background_color="#212121"), refresh=True
             )
-        code = code.replace("```python\n", "").replace("```", "")
+        code = code.replace("```python\n", "")
+        code = code[: code.rfind("```")]
         live.update(Syntax(code.strip(), "python", background_color="#212121"))
 
     confirm = "y"
