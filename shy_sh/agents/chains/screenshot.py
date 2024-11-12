@@ -3,8 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import chain
 from shy_sh.settings import settings
-from shy_sh.agents.llms import get_llm
-from rich import print
+from shy_sh.agents.llms import get_vision_llm
 from base64 import b64encode
 from PIL import ImageGrab
 from io import BytesIO
@@ -14,11 +13,13 @@ from io import BytesIO
 def screenshot_chain(state):
     task = state["input"]
     image = ImageGrab.grab().convert("RGB")
+    if image.size[0] * image.size[1] > 1920 * 1080:
+        image = image.resize((1920, 1080))
     buffered = BytesIO()
     image.save(buffered, format="JPEG")
     image_b64 = b64encode(buffered.getvalue()).decode("utf-8")
 
-    llm = get_llm()
+    llm = get_vision_llm()
     lang_ctx = ""
     if settings.language:
         lang_ctx = f"\nAnswer in {settings.language} language."

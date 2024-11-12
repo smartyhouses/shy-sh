@@ -1,42 +1,51 @@
-from shy_sh.settings import settings
+from shy_sh.settings import settings, BaseLLMSchema
 from functools import lru_cache
 
 
 @lru_cache
 def get_llm():
+    return _get_llm(settings.llm)
+
+
+@lru_cache
+def get_vision_llm():
+    if not settings.vision_llm:
+        return get_llm()
+    return _get_llm(settings.vision_llm)
+
+
+def _get_llm(llm_config: BaseLLMSchema):
     llm = None
-    match settings.llm.provider:
+    match llm_config.provider:
         case "openai":
             from langchain_openai import ChatOpenAI
 
             llm = ChatOpenAI(
-                model=settings.llm.name,
-                temperature=settings.llm.temperature,
-                api_key=settings.llm.api_key,
+                model=llm_config.name,
+                temperature=llm_config.temperature,
+                api_key=llm_config.api_key,
             )
         case "ollama":
             from langchain_ollama import ChatOllama
 
-            llm = ChatOllama(
-                model=settings.llm.name, temperature=settings.llm.temperature
-            )
+            llm = ChatOllama(model=llm_config.name, temperature=llm_config.temperature)
 
         case "groq":
             from langchain_groq import ChatGroq
 
             llm = ChatGroq(
-                model=settings.llm.name,
-                temperature=settings.llm.temperature,
-                api_key=settings.llm.api_key,
+                model=llm_config.name,
+                temperature=llm_config.temperature,
+                api_key=llm_config.api_key,
             )
 
         case "anthropic":
             from langchain_anthropic import ChatAnthropic
 
             llm = ChatAnthropic(
-                model_name=settings.llm.name,
-                temperature=settings.llm.temperature,
-                anthropic_api_key=settings.llm.api_key,
+                model_name=llm_config.name,
+                temperature=llm_config.temperature,
+                anthropic_api_key=llm_config.api_key,
             )
 
         case "google":
@@ -48,23 +57,25 @@ def get_llm():
             os.environ["GLOG_minloglevel"] = "2"
 
             llm = ChatGoogleGenerativeAI(
-                model=settings.llm.name,
-                temperature=settings.llm.temperature,
-                api_key=settings.llm.api_key,
+                model=llm_config.name,
+                temperature=llm_config.temperature,
+                api_key=llm_config.api_key,
             )
 
         case "aws":
             from langchain_aws import ChatBedrockConverse
 
-            region, access_key, secret_key = settings.llm.api_key.split(" ")
+            region, access_key, secret_key = llm_config.api_key.split(" ")
 
             llm = ChatBedrockConverse(
-                model=settings.llm.name,
-                temperature=settings.llm.temperature,
+                model=llm_config.name,
+                temperature=llm_config.temperature,
                 region_name=region,
                 aws_access_key_id=access_key,
                 aws_secret_access_key=secret_key,
             )
+        case _:
+            raise ValueError(f"Unknown LLM provider: {llm_config.provider}")
     return llm
 
 
