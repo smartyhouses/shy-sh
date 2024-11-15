@@ -25,6 +25,8 @@ Use `shy --configure` to change LLM (default use ollama - llama3.1)
 
 api_key format for aws bedrock: `region_name acces_key secret_key`
 
+supported providers: openai, anthropic, google, groq, aws, ollama
+
 **Examples**
 
 ```sh
@@ -55,7 +57,7 @@ Success!
 ```
 
 ```sh
-> shy rescale movie.avi to 1024x768 and save it in mp4
+> shy resize movie.avi to 1024x768 and save it in mp4
 
 🛠️ ffmpeg -i movie.avi -vf scale=1024:768 -c:v libx264 output.mp4
 
@@ -71,7 +73,7 @@ Do you want to execute this command? [Y/n/c]: c
 
 🤖: Hello! I'm fine thanks
 
-✨: how many file in this folder
+✨: how many files in this folder
 
 🛠️ ls | wc -l
 

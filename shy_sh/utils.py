@@ -31,6 +31,8 @@ def decode_output(process):
 
 
 def run_shell(cmd: str):
+    if cmd == "history" or cmd.startswith("history "):
+        return _get_history()
     result = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
@@ -42,7 +44,7 @@ def run_shell(cmd: str):
 
 def detect_shell():
     shell = os.environ.get("SHELL") or os.environ.get("COMSPEC")
-    shell = shell.lower()
+    shell = shell.lower().split("/")[-1]
     if "powershell" in shell:
         return "powershell"
     elif "cmd" in shell:
@@ -67,3 +69,24 @@ def tools_to_human(messages):
     return [
         HumanMessage(msg.content) for msg in messages if isinstance(msg, ToolMessage)
     ]
+
+
+HISTORY_FILES = {
+    "bash": ".bash_history",
+    "sh": ".bash_history",
+    "zsh": ".zsh_history",
+    "fish": ".local/share/fish/fish_history",
+    "ksh": ".ksh_history",
+    "tcsh": ".history",
+}
+
+
+def _get_history():
+    try:
+        shell = detect_shell()
+        history_file = HISTORY_FILES[shell]
+        with open(os.path.expanduser(f"~/{history_file}"), "r") as f:
+            history = f.read()
+        return "\n".join(history.strip().split("\n")[-6:-1])
+    except Exception:
+        return "I can't get the history for this shell"

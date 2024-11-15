@@ -26,10 +26,23 @@ def get_graph_inputs(
 
 
 def parse_react_tool(message):
-    maybe_tool = message.content[
-        message.content.index("{") : message.content.rindex("}") + 1
-    ]
-    return ToolRequest.model_validate_json(maybe_tool)
+    start_idx = message.content.index("{")
+    if start_idx < 0:
+        raise ValueError("No tool call found")
+    end_idx = start_idx + 1
+    open_brackets = 1
+    while open_brackets > 0 and end_idx < len(message.content):
+        if message.content[end_idx] == "{":
+            open_brackets += 1
+        elif message.content[end_idx] == "}":
+            open_brackets -= 1
+        end_idx += 1
+    maybe_tool = message.content[start_idx:end_idx]
+    try:
+        return ToolRequest.model_validate_json(maybe_tool)
+    except Exception:
+        maybe_tool = message.content[start_idx : message.content.rindex("}") + 1]
+        return ToolRequest.model_validate_json(maybe_tool)
 
 
 def has_tool_calls(message):
@@ -57,6 +70,11 @@ def run_few_shot_examples():
             "tool": "shell",
             "arg": "git rev-parse --abbrev-ref HEAD",
             "thoughts": "I'm checking if it's a git repository",
+        },
+        {
+            "tool": "shell",
+            "arg": "history",
+            "thoughts": "I'm checking the last commands runned in the shell to get some context",
         },
     ]
     result = []

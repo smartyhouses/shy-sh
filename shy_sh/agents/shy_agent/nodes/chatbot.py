@@ -34,16 +34,16 @@ def chatbot(state: State):
                     refresh=True,
                 )
         message = _parse_chunk_message(final_message)
-        ai_mmessage = AIMessage(
+        ai_message = AIMessage(
             content=message, tool_calls=getattr(final_message, "tool_calls", [])
         )
-        if has_tool_calls(ai_mmessage):
+        if has_tool_calls(ai_message):
             live.update("")
         else:
             live.update(
                 Syntax(f"🤖: {message}", **console_theme),
             )
-    return {"tool_history": [ai_mmessage]}
+    return {"tool_history": [ai_message]}
 
 
 def _maybe_have_tool_calls(message, parsed_message):
