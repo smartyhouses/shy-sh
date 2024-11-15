@@ -87,6 +87,15 @@ def _get_history():
         history_file = HISTORY_FILES[shell]
         with open(os.path.expanduser(f"~/{history_file}"), "r") as f:
             history = f.read()
-        return "\n".join(history.strip().split("\n")[-6:-1])
+        return "\n".join(
+            [
+                cmd
+                for cmd in history.strip().split("\n")[:-1]
+                if cmd != "shy"
+                and not cmd.startswith("shy ")
+                and ";shy " not in cmd
+                and not cmd.endswith(";shy")
+            ][-5:]
+        )
     except Exception:
         return "I can't get the history for this shell"
