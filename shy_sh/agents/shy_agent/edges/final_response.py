@@ -12,14 +12,15 @@ def final_response_edge(state: State):
         message = last_tool.content
         if settings.llm.agent_pattern == "react":
             message = message.replace("Tool response:\n", "", 1)
-        print(
-            Syntax(
-                f"🤖: {message}",
-                "console",
-                theme="one-dark",
-                background_color="#181818",
+        if not artifact.skip_print:
+            print(
+                Syntax(
+                    f"🤖: {message}",
+                    "console",
+                    theme="one-dark",
+                    background_color="#181818",
+                )
             )
-        )
         return END
     print()
     return "chatbot"

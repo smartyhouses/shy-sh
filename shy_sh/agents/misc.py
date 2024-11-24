@@ -71,11 +71,6 @@ def run_few_shot_examples():
             "arg": "git rev-parse --abbrev-ref HEAD",
             "thoughts": "I'm checking if it's a git repository",
         },
-        {
-            "tool": "shell",
-            "arg": "history",
-            "thoughts": "I'm checking the last commands runned in the shell to get some context",
-        },
     ]
     result = []
     result.append(
@@ -91,7 +86,7 @@ def run_few_shot_examples():
             result.append(HumanMessage(content=f"Tool response:\n{response}"))
         elif settings.llm.agent_pattern == "function_call":
             result.append(ToolMessage(content=response, tool_call_id=uid))
-    result.append(AIMessage(content="Ok"))
+    result.append(AIMessage(content="All set! 👍"))
     return result
 
 

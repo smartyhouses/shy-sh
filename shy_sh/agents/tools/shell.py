@@ -18,7 +18,9 @@ def shell(arg: str, state: Annotated[State, InjectedState]):
         confirm = ask_confirm()
     print()
     if confirm == "n":
-        return "Task interrupted", ToolMeta(stop_execution=True)
+        return "Command interrupted by the user", ToolMeta(
+            stop_execution=True, skip_print=True
+        )
     elif confirm == "c":
         pyperclip.copy(arg)
         return "Command copied to the clipboard!", ToolMeta(stop_execution=True)

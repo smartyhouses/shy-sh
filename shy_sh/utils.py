@@ -32,7 +32,7 @@ def decode_output(process):
 
 def run_shell(cmd: str):
     if cmd == "history" or cmd.startswith("history "):
-        return _get_history()
+        return get_shell_history()
     result = subprocess.run(
         cmd,
         stdout=subprocess.PIPE,
@@ -54,7 +54,10 @@ def detect_shell():
 
 
 def detect_os():
-    return platform.system()
+    system = platform.system()
+    if system.lower() == "darwin":
+        return "macos"
+    return system
 
 
 def count_tokens(
@@ -81,7 +84,7 @@ HISTORY_FILES = {
 }
 
 
-def _get_history():
+def get_shell_history():
     try:
         shell = detect_shell()
         history_file = HISTORY_FILES[shell]

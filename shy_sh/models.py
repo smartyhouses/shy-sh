@@ -15,6 +15,7 @@ class FinalResponse(BaseModel):
 
 class ToolMeta(BaseModel):
     stop_execution: bool = False
+    skip_print: bool = False
 
 
 class State(TypedDict):

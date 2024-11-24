@@ -37,7 +37,9 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
         confirm = ask_confirm()
     print()
     if confirm == "n":
-        return "Command canceled by user", ToolMeta(stop_execution=True)
+        return "Command canceled by user", ToolMeta(
+            stop_execution=True, skip_print=True
+        )
     elif confirm == "c":
         pyperclip.copy(code)
         return "Script copied to the clipboard!", ToolMeta(stop_execution=True)
