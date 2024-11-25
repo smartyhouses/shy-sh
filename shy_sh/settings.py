@@ -10,7 +10,7 @@ from pydantic_settings import (
 )
 from pydantic import BaseModel
 from pathlib import Path
-from rich.prompt import Prompt, FloatPrompt
+from questionary import unsafe_prompt, confirm, text, Style
 
 
 class BaseLLMSchema(BaseModel):
@@ -24,7 +24,15 @@ class LLMSchema(BaseLLMSchema):
     agent_pattern: Literal["function_call", "react"] = "function_call"
 
 
-class Settings(BaseSettings):
+class _Settings(BaseModel):
+    llm: LLMSchema = LLMSchema(provider="ollama", name="llama3.1")
+
+    vision_llm: BaseLLMSchema | None = None
+
+    language: str = ""
+
+
+class Settings(BaseSettings, _Settings):
     model_config = SettingsConfigDict(
         yaml_file=[
             "~/.config/shy/config.yaml",
@@ -33,12 +41,6 @@ class Settings(BaseSettings):
             "./shy.yml",
         ]
     )
-
-    llm: LLMSchema = LLMSchema(provider="ollama", name="llama3.1")
-
-    vision_llm: BaseLLMSchema | None = None
-
-    language: str = ""
 
     @classmethod
     def settings_customise_sources(
@@ -55,59 +57,101 @@ PROVIDERS = ["ollama", "openai", "google", "anthropic", "groq", "aws"]
 
 def get_or_create_settings_path():
     file_name = None
-    for f in reversed(settings.model_config["yaml_file"]):
+    for f in reversed(settings.model_config["yaml_file"]):  # type: ignore
         f = Path(f).expanduser()
         if os.path.exists(f):
             file_name = f
             break
     if not file_name:
-        file_name = settings.model_config["yaml_file"][0]
+        file_name = settings.model_config["yaml_file"][0]  # type: ignore
         file_name = Path(file_name).expanduser()
         os.makedirs(os.path.dirname(file_name), exist_ok=True)
     return file_name
 
 
+_text_style = {
+    "qmark": "",
+    "style": Style.from_dict(
+        {
+            "selected": "fg:darkorange noreverse",
+            "question": "fg:ansigreen nobold",
+            "highlighted": "fg:darkorange",
+            "text": "fg:darkorange",
+            "answer": "fg:darkorange nobold",
+            "instruction": "fg:darkorange",
+        }
+    ),
+}
+
+_select_style = {
+    "pointer": "►",
+    "instruction": " ",
+    **_text_style,
+}
+
+
+def _try_float(x):
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return "Please enter a valid number"
+
+
 def configure_yaml():
-    provider = Prompt.ask(
-        "[green bold]Provider[/]",
-        default=settings.llm.provider,
-        show_choices=True,
-        choices=PROVIDERS,
-    )
-    agent_pattern = Prompt.ask(
-        "[green bold]Agent Pattern[/]",
-        default=settings.llm.agent_pattern,
-        show_choices=True,
-        choices=["function_call", "react"],
-    )
-    name = Prompt.ask(
-        "[green bold]Model[/]",
-        default=settings.llm.name,
-    )
 
-    api_key = Prompt.ask(
-        "[green bold]API Key[/]",
-        default=settings.llm.api_key,
-        password=True,
-        show_default=False,
-    )
-    temperature = FloatPrompt.ask(
-        "[green bold]Temperature[/]",
-        default=settings.llm.temperature,
-    )
-    language = Prompt.ask(
-        "[green bold]Language[/]",
-        default=settings.language,
-    )
-    setup_vision = Prompt.ask(
-        "[green bold]Do you want to setup a vision model?[/]",
-        default="n",
-        show_choices=True,
-        choices=["y", "n"],
-    )
+    questions = [
+        {
+            "type": "select",
+            "name": "provider",
+            "message": "Provider:",
+            "choices": PROVIDERS,
+            "default": settings.llm.provider,
+            **_select_style,
+        },
+        {
+            "type": "select",
+            "name": "agent_pattern",
+            "message": "Agent Pattern:",
+            "choices": ["function_call", "react"],
+            "default": settings.llm.agent_pattern,
+            **_select_style,
+        },
+        {
+            "type": "text",
+            "name": "name",
+            "message": "Model:",
+            "default": settings.llm.name,
+            **_text_style,
+        },
+        {
+            "type": "password",
+            "name": "api_key",
+            "message": "API Key:",
+            "default": settings.llm.api_key,
+            **_text_style,
+        },
+        {
+            "type": "text",
+            "name": "temperature",
+            "message": "Temperature:",
+            "default": str(settings.llm.temperature),
+            "validate": lambda x: _try_float(x),
+            **_text_style,
+        },
+    ]
 
-    vision_llm = None
-    if setup_vision == "y":
+    llm = unsafe_prompt(questions)
+    language = text("Language:", default=settings.language, **_text_style).unsafe_ask()
+
+    llm["temperature"] = float(llm["temperature"])
+
+    vision_llm = settings.vision_llm.model_dump() if settings.vision_llm else llm
+
+    setup_vision = confirm(
+        "Setup Vision Model?", default=False, **_text_style
+    ).unsafe_ask()
+    if setup_vision:
         vision_llm = configure_vision_model()
 
     file_name = get_or_create_settings_path()
@@ -116,58 +160,62 @@ def configure_yaml():
         f.write(
             yaml.dump(
                 {
-                    "llm": {
-                        "provider": provider,
-                        "agent_pattern": agent_pattern,
-                        "name": name,
-                        "api_key": api_key,
-                        "temperature": temperature,
-                    },
+                    "llm": llm,
                     "vision_llm": vision_llm,
                     "language": language,
                 }
             )
         )
 
-    print(f"Configuration saved to {file_name}")
+    print(f"\nConfiguration saved to {file_name}")
 
 
 def configure_vision_model():
-    provider = Prompt.ask(
-        "[green bold]Provider[/]",
-        show_choices=True,
-        choices=PROVIDERS,
-        default=(
-            settings.vision_llm.provider
-            if settings.vision_llm
-            else settings.llm.provider
-        ),
-    )
-    name = Prompt.ask(
-        "[green bold]Model[/]",
-        default=settings.vision_llm.name if settings.vision_llm else settings.llm.name,
-    )
+    questions = [
+        {
+            "type": "select",
+            "name": "provider",
+            "message": "Provider:",
+            "choices": PROVIDERS,
+            "default": (
+                settings.vision_llm.provider
+                if settings.vision_llm
+                else settings.llm.provider
+            ),
+            **_select_style,
+        },
+        {
+            "type": "text",
+            "name": "name",
+            "message": "Model:",
+            "default": (
+                settings.vision_llm.name if settings.vision_llm else settings.llm.name
+            ),
+            **_text_style,
+        },
+        {
+            "type": "password",
+            "name": "api_key",
+            "message": "API Key:",
+            "default": (
+                settings.vision_llm.api_key
+                if settings.vision_llm
+                else settings.llm.api_key
+            ),
+            **_text_style,
+        },
+        {
+            "type": "text",
+            "name": "temperature",
+            "message": "Temperature:",
+            "default": str(
+                settings.vision_llm.temperature
+                if settings.vision_llm
+                else settings.llm.temperature
+            ),
+            "validate": lambda x: _try_float(x),
+            **_text_style,
+        },
+    ]
 
-    api_key = Prompt.ask(
-        "[green bold]API Key[/]",
-        password=True,
-        show_default=False,
-        default=(
-            settings.vision_llm.api_key if settings.vision_llm else settings.llm.api_key
-        ),
-    )
-    temperature = FloatPrompt.ask(
-        "[green bold]Temperature[/]",
-        default=(
-            settings.vision_llm.temperature
-            if settings.vision_llm
-            else settings.llm.temperature
-        ),
-    )
-
-    return {
-        "provider": provider,
-        "name": name,
-        "api_key": api_key,
-        "temperature": temperature,
-    }
+    return unsafe_prompt(questions)

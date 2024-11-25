@@ -35,10 +35,13 @@ pyyaml = "^6.0.1"
 pydantic-settings = "^2.3.4"
 pillow = "^11.0.0"
 pyperclip = "^1.9.0"
+questionary = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 jupyter = "^1.0.0"
 poetry-bumpversion = "^0.3.2"
+pytest = "^8.3.3"
+pytest-mock = "^3.14.0"
 
 [tool.poetry.scripts]
 shy = "shy_sh.main:main"
