@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import pyperclip
 from typing import Annotated
 from tempfile import NamedTemporaryFile
@@ -58,11 +59,20 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
         ext = ".bat"
     elif shell == "powershell":
         ext = ".ps1"
-    with NamedTemporaryFile("w+", suffix=ext, delete_on_close=False) as file:
-        file.write(code)
-        file.close()
-        os.chmod(file.name, 0o755)
-        result = run_shell(file.name) or "Done"
+
+    if sys.version_info >= (3, 11):
+        with NamedTemporaryFile("w+", suffix=ext, delete_on_close=False) as file:
+            file.write(code)
+            file.close()
+            os.chmod(file.name, 0o755)
+            result = run_shell(file.name) or "Done"
+    else:
+        with NamedTemporaryFile("w+", suffix=ext, delete=False) as file:
+            file.write(code)
+            file.close()
+            os.chmod(file.name, 0o755)
+            result = run_shell(file.name) or "Done"
+            os.unlink(file.name)
     print()
     print(Syntax(result.strip(), "console", background_color="#212121"))
     return f"Script executed:\n{code}\n\nOutput:\n{result}", ToolMeta()
