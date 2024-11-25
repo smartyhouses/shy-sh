@@ -1,5 +1,3 @@
-import os
-import yaml
 import pytest
 from typer import Typer
 from typer.testing import CliRunner
@@ -16,13 +14,13 @@ def mock_app_settings():
                 "agent_pattern": "react",
                 "api_key": "xxx",
                 "name": "test",
-                "provider": "test",
+                "provider": "ollama",
                 "temperature": 1.0,
             },
             "vision_llm": {
                 "api_key": "xxx",
                 "name": "test",
-                "provider": "test",
+                "provider": "ollama",
                 "temperature": 1.0,
             },
         }
