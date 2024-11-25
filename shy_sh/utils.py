@@ -43,18 +43,18 @@ def run_shell(cmd: str):
 
 
 def detect_shell():
-    shell = os.environ.get("SHELL") or os.environ.get("COMSPEC")
+    shell = os.environ.get("SHELL") or os.environ.get("COMSPEC") or "sh"
     shell = shell.lower().split("/")[-1]
     if "powershell" in shell:
         return "powershell"
     elif "cmd" in shell:
         return "cmd"
 
-    return shell.lower()
+    return shell
 
 
 def detect_os():
-    system = platform.system()
+    system = platform.system() or "linux"
     if system.lower() == "darwin":
         return "macos"
     return system
