@@ -1,4 +1,5 @@
-from typing import Optional, TypedDict, Annotated
+from typing import Optional
+from typing_extensions import TypedDict, Annotated
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel
 
