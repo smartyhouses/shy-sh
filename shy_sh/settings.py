@@ -146,7 +146,7 @@ def configure_yaml():
 
     llm["temperature"] = float(llm["temperature"])
 
-    vision_llm = settings.vision_llm.model_dump() if settings.vision_llm else llm
+    vision_llm = settings.vision_llm.model_dump() if settings.vision_llm else llm.copy()
 
     setup_vision = confirm(
         "Setup Vision Model?", default=False, **_text_style
