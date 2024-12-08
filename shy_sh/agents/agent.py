@@ -1,9 +1,9 @@
 from rich import print
 from rich.live import Live
-from rich.syntax import Syntax
 from shy_sh.agents.shy_agent.graph import shy_agent_graph
 from shy_sh.agents.misc import get_graph_inputs, run_few_shot_examples
 from shy_sh.agents.chains.screenshot import screenshot_chain
+from langchain_core.messages import HumanMessage
 
 
 class ShyAgent:
@@ -32,11 +32,11 @@ class ShyAgent:
         return f"\nContext informations - This is what I'm seeing in my screen right now:\n{result}\n\nTask: {task}"
 
     def _run(self, task: str):
+        self.history.append(HumanMessage(content=task))
         if self.screenshot:
             task = self._update_task_with_image(task)
             self.screenshot = False
         inputs = get_graph_inputs(
-            task=task,
             history=self.history,
             examples=self.examples,
             ask_before_execute=self.ask_before_execute,

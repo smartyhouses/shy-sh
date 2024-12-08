@@ -44,8 +44,7 @@ def shy_agent_chain(_):
         [
             ("system", template),
             MessagesPlaceholder("few_shot_examples", optional=True),
-            MessagesPlaceholder("history", optional=True),
-            ("human", "{input}"),
+            MessagesPlaceholder("history"),
             MessagesPlaceholder("tool_history", optional=True),
         ]
     )

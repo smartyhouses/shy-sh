@@ -9,13 +9,11 @@ from shy_sh.models import ToolRequest
 
 
 def get_graph_inputs(
-    task: str,
     history: list,
     examples: list,
     ask_before_execute: bool,
 ):
     return {
-        "input": task,
         "history": history,
         "timestamp": strftime("%Y-%m-%d %H:%M %Z"),
         "ask_before_execute": ask_before_execute,

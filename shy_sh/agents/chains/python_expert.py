@@ -26,7 +26,7 @@ def pyexpert_chain(_):
                 "system",
                 "You are a python expert. The current date and time is {timestamp}",
             ),
-            MessagesPlaceholder("history", optional=True),
+            MessagesPlaceholder("history"),
             ("human", msg_template),
         ]
     )

@@ -70,7 +70,8 @@ def count_tokens(
 
 def tools_to_human(messages):
     return [
-        HumanMessage(msg.content) for msg in messages if isinstance(msg, ToolMessage)
+        HumanMessage(msg.content) if isinstance(msg, ToolMessage) else msg
+        for msg in messages
     ]
 
 

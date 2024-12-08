@@ -32,7 +32,7 @@ def shexpert_chain(_):
                 "system",
                 "You are a shell expert. The current date and time is {timestamp}\nYou are running on {system} using {shell} as shell",
             ),
-            MessagesPlaceholder("history", optional=True),
+            MessagesPlaceholder("history"),
             ("human", msg_template),
         ]
     )

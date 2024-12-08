@@ -18,7 +18,7 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
     print(f"🐍 [bold yellow]Generating python script...[/bold yellow]\n")
     inputs = {
         "timestamp": state["timestamp"],
-        "history": tools_to_human(state["tool_history"]),
+        "history": tools_to_human(state["history"] + state["tool_history"]),
         "input": arg,
     }
     code = ""

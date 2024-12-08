@@ -26,7 +26,7 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
         "system": system,
         "shell": shell,
         "timestamp": state["timestamp"],
-        "history": tools_to_human(state["tool_history"]),
+        "history": tools_to_human(state["history"] + state["tool_history"]),
     }
     code = ""
     with Live() as live:
