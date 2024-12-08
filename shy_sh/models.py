@@ -20,7 +20,6 @@ class ToolMeta(BaseModel):
 
 
 class State(TypedDict):
-    input: str
     timestamp: str
     lang_spec: str
     ask_before_execute: bool = True
