@@ -14,6 +14,7 @@ Options
 - -i Interactive mode [default false if a prompt is passed else true]
 - -x Do not ask confirmation before executing scripts
 - -s or start your message with /screen: Take a screenshot to be analyzed with the prompt (requires vision model)
+- -e Explain the given shell command
 - --configure Configure LLM
 - --help Show this message and exit.
 
@@ -84,4 +85,12 @@ Do you want to execute this command? [Y/n/c]:
 ✨: exit
 
 🤖: 👋 Bye!
+```
+
+```sh
+> shy -e "find . -type f -name '*.py' | wc -l"
+
+🤖: This shell command uses `find` to search for files (`-type f`) with the extension `.py` (`-name '*.py'`) in the current directory (`.`) and its subdirectories.
+The results are then piped to `wc -l`, which counts the number of line.
+In conclusion, the command presents the total count of Python files (*.py) located within the current directory and its subdirectories.
 ```

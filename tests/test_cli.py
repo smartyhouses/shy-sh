@@ -39,7 +39,10 @@ def test_use_shell_tool(exec, mocker):
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
-        assert "Do you want to execute this command? [Y/n/c]" in result.stdout
+        assert (
+            "Do you want to execute this command? [Yes/no/copy/explain]"
+            in result.stdout
+        )
         assert "🛠️ echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
@@ -56,7 +59,10 @@ def test_use_shell_tool_no_confirmation(exec, mocker):
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
-        assert "Do you want to execute this command? [Y/n/c]" not in result.stdout
+        assert (
+            "Do you want to execute this command? [Yes/no/copy/explain]"
+            not in result.stdout
+        )
         assert "🛠️ echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
@@ -75,7 +81,10 @@ def test_use_shell_expert_tool(exec, mocker):
 
         assert "✨: how are you" in result.stdout
         assert "💻 Generating shell script..." in result.stdout
-        assert "Do you want to execute this command? [Y/n/c]" in result.stdout
+        assert (
+            "Do you want to execute this command? [Yes/no/copy/explain]"
+            in result.stdout
+        )
         assert "echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
@@ -94,7 +103,10 @@ def test_use_shell_expert_tool_no_confirmation(exec, mocker):
 
         assert "✨: how are you" in result.stdout
         assert "💻 Generating shell script..." in result.stdout
-        assert "Do you want to execute this command? [Y/n/c]" not in result.stdout
+        assert (
+            "Do you want to execute this command? [Yes/no/copy/explain]"
+            not in result.stdout
+        )
         assert "echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
@@ -113,7 +125,10 @@ def test_use_python_expert_tool(exec, mocker):
 
         assert "✨: how are you" in result.stdout
         assert "🐍 Generating python script..." in result.stdout
-        assert "Do you want to execute this command? [Y/n/c]" in result.stdout
+        assert (
+            "Do you want to execute this command? [Yes/no/copy/explain]"
+            in result.stdout
+        )
         assert "print('fine thanks')" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
@@ -132,7 +147,10 @@ def test_use_python_expert_tool_no_confirmation(exec, mocker):
 
         assert "✨: how are you" in result.stdout
         assert "🐍 Generating python script..." in result.stdout
-        assert "Do you want to execute this command? [Y/n/c]" not in result.stdout
+        assert (
+            "Do you want to execute this command? [Yes/no/copy/explain]"
+            not in result.stdout
+        )
         assert "print('fine thanks')" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 

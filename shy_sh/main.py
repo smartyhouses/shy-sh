@@ -3,7 +3,9 @@ from typing import Optional, Annotated
 from importlib.metadata import version
 from shy_sh.agents.agent import ShyAgent
 from shy_sh.settings import settings, configure_yaml
+from shy_sh.agents.chains.explain import explain as do_explain
 from rich import print
+from time import strftime
 
 
 def exec(
@@ -29,6 +31,13 @@ def exec(
             help="Take a screenshot of the terminal before the execution",
         ),
     ] = False,
+    explain: Annotated[
+        Optional[bool],
+        typer.Option(
+            "-e",
+            help="Explain the given shell command",
+        ),
+    ] = False,
     configure: Annotated[
         Optional[bool], typer.Option("--configure", help="Configure LLM")
     ] = False,
@@ -44,6 +53,21 @@ def exec(
         return
     task = " ".join(prompt or [])
     print(f"[bold italic dark_orange]{settings.llm.provider} - {settings.llm.name}[/]")
+    if explain:
+        if not task:
+            print("🚨 [bold red]No command provided[/]")
+        do_explain(
+            {
+                "task": "explain this shell command",
+                "script_type": "shell command",
+                "script": task,
+                "script_type": "shell command",
+                "timestamp": strftime("%Y-%m-%d %H:%M:%S"),
+            },
+            ask_execute=False,
+        )
+        return
+
     if not task:
         interactive = True
     else:

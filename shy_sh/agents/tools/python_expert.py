@@ -10,6 +10,7 @@ from contextlib import redirect_stdout, redirect_stderr
 from shy_sh.models import State, ToolMeta
 from shy_sh.utils import ask_confirm, tools_to_human
 from shy_sh.agents.chains.python_expert import pyexpert_chain
+from shy_sh.agents.chains.explain import explain
 
 
 @tool(response_format="content_and_artifact")
@@ -43,6 +44,16 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
     elif confirm == "c":
         pyperclip.copy(code)
         return "Script copied to the clipboard!", ToolMeta(stop_execution=True)
+    elif confirm == "e":
+        inputs = {
+            "task": arg,
+            "script_type": "python script",
+            "script": code,
+            "timestamp": state["timestamp"],
+        }
+        ret = explain(inputs)
+        if ret:
+            return ret
 
     stdout = StringIO()
     stderr = StringIO()

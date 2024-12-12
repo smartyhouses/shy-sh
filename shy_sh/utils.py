@@ -7,14 +7,20 @@ from rich.prompt import Prompt
 from langchain_core.messages import HumanMessage, ToolMessage
 
 
-def ask_confirm() -> Literal["y", "n", "c"]:
+def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
+    if explain:
+        choiches = ["y", "n", "c", "e", "yes", "no", "copy", "explain"]
+    else:
+        choiches = ["y", "n", "c", "yes", "no", "copy"]
+
     return Prompt.ask(
-        "\n[dark_orange]Do you want to execute this command?[/dark_orange]",
-        choices=["Y", "n", "c"],
+        f"\n[dark_orange]Do you want to execute this command?[/] [bold magenta]\[[underline]Y[/]es/[underline]n[/]o/[underline]c[/]opy{'/[underline]e[/]xplain' if explain else ''}][/]",
+        choices=choiches,
         default="y",
         show_default=False,
+        show_choices=False,
         case_sensitive=False,
-    ).lower()
+    ).lower()[0]
 
 
 def decode_output(process):

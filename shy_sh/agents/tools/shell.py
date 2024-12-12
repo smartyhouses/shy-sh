@@ -7,6 +7,7 @@ from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
 from shy_sh.utils import ask_confirm
 from shy_sh.utils import run_shell
+from shy_sh.agents.chains.explain import explain
 
 
 @tool(response_format="content_and_artifact")
@@ -24,6 +25,16 @@ def shell(arg: str, state: Annotated[State, InjectedState]):
     elif confirm == "c":
         pyperclip.copy(arg)
         return "Command copied to the clipboard!", ToolMeta(stop_execution=True)
+    elif confirm == "e":
+        inputs = {
+            "task": state["history"][-1].content,
+            "script_type": "shell command",
+            "script": arg,
+            "timestamp": state["timestamp"],
+        }
+        ret = explain(inputs)
+        if ret:
+            return ret
 
     result = run_shell(arg) or "Success!"
     print(Syntax(result.strip(), "console", background_color="#212121"))

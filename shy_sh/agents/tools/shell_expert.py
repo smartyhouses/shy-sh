@@ -13,6 +13,7 @@ from shy_sh.models import State, ToolMeta
 from shy_sh.utils import ask_confirm, detect_shell, detect_os
 from shy_sh.agents.chains.shell_expert import shexpert_chain
 from shy_sh.utils import run_shell, tools_to_human
+from shy_sh.agents.chains.explain import explain
 
 
 @tool(response_format="content_and_artifact")
@@ -53,6 +54,16 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
     elif confirm == "c":
         pyperclip.copy(code)
         return "Script copied to the clipboard!", ToolMeta(stop_execution=True)
+    elif confirm == "e":
+        inputs = {
+            "task": arg,
+            "script_type": "shell script",
+            "script": code,
+            "timestamp": state["timestamp"],
+        }
+        ret = explain(inputs)
+        if ret:
+            return ret
 
     ext = ".sh"
     if shell == "cmd":
