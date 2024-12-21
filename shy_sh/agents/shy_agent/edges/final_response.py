@@ -1,8 +1,8 @@
 from rich import print
-from rich.syntax import Syntax
 from langgraph.graph import END
 from shy_sh.models import State, ToolMeta
 from shy_sh.settings import settings
+from shy_sh.utils import syntax
 
 
 def final_response_edge(state: State):
@@ -13,14 +13,7 @@ def final_response_edge(state: State):
         if settings.llm.agent_pattern == "react":
             message = message.replace("Tool response:\n", "", 1)
         if not artifact.skip_print:
-            print(
-                Syntax(
-                    f"🤖: {message}",
-                    "console",
-                    theme="one-dark",
-                    background_color="#181818",
-                )
-            )
+            print(syntax(f"🤖: {message}"))
         return END
     print()
     return "chatbot"

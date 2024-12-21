@@ -4,6 +4,7 @@ import subprocess
 from typing import Literal
 from tiktoken import get_encoding
 from rich.prompt import Prompt
+from rich.syntax import Syntax
 from langchain_core.messages import HumanMessage, ToolMessage
 
 
@@ -21,6 +22,26 @@ def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
         show_choices=False,
         case_sensitive=False,
     ).lower()[0]
+
+
+PRINT_THEMES = {
+    "response": {
+        "theme": "one-dark",
+        "background_color": "#181818",
+    },
+    "command": {
+        "background_color": "#212121",
+    },
+}
+
+
+def syntax(text: str, lexer: str = "console", theme: str = "response"):
+    return Syntax(
+        text,
+        lexer,
+        word_wrap=True,
+        **PRINT_THEMES.get(theme, {}),  # type: ignore
+    )
 
 
 def decode_output(process):

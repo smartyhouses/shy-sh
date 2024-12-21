@@ -2,13 +2,12 @@ import pyperclip
 from typing import Annotated
 from io import StringIO
 from rich import print
-from rich.syntax import Syntax
 from rich.live import Live
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from contextlib import redirect_stdout, redirect_stderr
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm, tools_to_human
+from shy_sh.utils import ask_confirm, tools_to_human, syntax
 from shy_sh.agents.chains.python_expert import pyexpert_chain
 from shy_sh.agents.chains.explain import explain
 
@@ -26,12 +25,10 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
     with Live() as live:
         for chunk in pyexpert_chain.stream(inputs):
             code += chunk
-            live.update(
-                Syntax(code, "python", background_color="#212121"), refresh=True
-            )
+            live.update(syntax(code, "python", "command"), refresh=True)
         code = code.replace("```python\n", "")
         code = code[: code.rfind("```")]
-        live.update(Syntax(code.strip(), "python", background_color="#212121"))
+        live.update(syntax(code.strip(), "python", "command"))
 
     confirm = "y"
     if state["ask_before_execute"]:
@@ -61,7 +58,7 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
         with redirect_stdout(stdout):
             exec(code, {"__name__": "__main__"})
     output = stdout.getvalue().strip() or stderr.getvalue().strip()[-500:] or "Done"
-    print(Syntax(output, "console", background_color="#212121"))
+    print(syntax(output, theme="command"))
     return (
         f"\nScript executed:\n```python\n{code.strip()}\n```\n\nOutput:\n{output}",
         ToolMeta(),

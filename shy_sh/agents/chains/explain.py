@@ -3,12 +3,11 @@ from langchain_core.runnables import chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
 from shy_sh.agents.llms import get_llm
-from shy_sh.utils import ask_confirm
+from shy_sh.utils import ask_confirm, syntax
 from shy_sh.models import ToolMeta
 from shy_sh.settings import settings
 from textwrap import dedent
 from rich.live import Live
-from rich.syntax import Syntax
 
 
 msg_template = dedent(
@@ -52,12 +51,7 @@ def explain(inputs, ask_execute=True):
         ):
             text += chunk
             live.update(
-                Syntax(
-                    text,
-                    "console",
-                    theme="one-dark",
-                    background_color="#181818",
-                ),
+                syntax(text),
                 refresh=True,
             )
     print()

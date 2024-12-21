@@ -5,14 +5,13 @@ import pyperclip
 from typing import Annotated
 from tempfile import NamedTemporaryFile
 from rich import print
-from rich.syntax import Syntax
 from rich.live import Live
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
 from shy_sh.utils import ask_confirm, detect_shell, detect_os
 from shy_sh.agents.chains.shell_expert import shexpert_chain
-from shy_sh.utils import run_shell, tools_to_human
+from shy_sh.utils import run_shell, tools_to_human, syntax
 from shy_sh.agents.chains.explain import explain
 
 
@@ -34,13 +33,15 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
         for chunk in shexpert_chain.stream(inputs):
             code += chunk
             live.update(
-                Syntax(code, "console", background_color="#212121"), refresh=True
+                syntax(code, theme="command"),
+                refresh=True,
             )
 
         code = re.sub(r"```\S+\n", "", code)
         code = code[: code.rfind("```")]
         live.update(
-            Syntax(code.strip(), "console", background_color="#212121"), refresh=True
+            syntax(code.strip(), theme="command"),
+            refresh=True,
         )
 
     confirm = "y"
@@ -85,5 +86,5 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
             result = run_shell(file.name) or "Done"
             os.unlink(file.name)
     print()
-    print(Syntax(result.strip(), "console", background_color="#212121"))
+    print(syntax(result.strip(), theme="command"))
     return f"Script executed:\n{code}\n\nOutput:\n{result}", ToolMeta()

@@ -1,13 +1,11 @@
 from langchain_core.messages import AIMessage
-from langchain_core.output_parsers import StrOutputParser
 from shy_sh.settings import settings
 from shy_sh.models import State
 from shy_sh.agents.llms import get_llm_context
-from shy_sh.utils import count_tokens
+from shy_sh.utils import count_tokens, syntax
 from shy_sh.agents.chains.shy_agent import shy_agent_chain
 from shy_sh.agents.misc import has_tool_calls
 from rich.live import Live
-from rich.syntax import Syntax
 
 console_theme = {
     "lexer": "console",
@@ -30,7 +28,7 @@ def chatbot(state: State):
                 live.update(loading_str)
             else:
                 live.update(
-                    Syntax(f"🤖: {message}", **console_theme),
+                    syntax(f"🤖: {message}"),
                     refresh=True,
                 )
         message = _parse_chunk_message(final_message)
@@ -41,7 +39,7 @@ def chatbot(state: State):
             live.update("")
         else:
             live.update(
-                Syntax(f"🤖: {message}", **console_theme),
+                syntax(f"🤖: {message}"),
             )
     return {"tool_history": [ai_message]}
 

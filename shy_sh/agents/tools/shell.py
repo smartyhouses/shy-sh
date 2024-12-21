@@ -1,12 +1,10 @@
 import pyperclip
 from typing import Annotated
 from rich import print
-from rich.syntax import Syntax
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm
-from shy_sh.utils import run_shell
+from shy_sh.utils import ask_confirm, run_shell, syntax
 from shy_sh.agents.chains.explain import explain
 
 
@@ -37,5 +35,5 @@ def shell(arg: str, state: Annotated[State, InjectedState]):
             return ret
 
     result = run_shell(arg) or "Success!"
-    print(Syntax(result.strip(), "console", background_color="#212121"))
+    print(syntax(result.strip(), theme="command"))
     return result, ToolMeta()
