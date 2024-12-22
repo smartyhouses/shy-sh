@@ -15,7 +15,7 @@ msg_template = dedent(
     ```
 
     This is a template for sh, but you should use the right shell syntaxt depending on your system.
-    Don't write interactive commands or install new packages if not explicitly requested.
+    Don't install new packages if not explicitly requested.
     Write a shell script that accomplishes the task.
 
     Task: {input}

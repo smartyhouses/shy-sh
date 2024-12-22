@@ -11,7 +11,7 @@ from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
 from shy_sh.utils import ask_confirm, detect_shell, detect_os
 from shy_sh.agents.chains.shell_expert import shexpert_chain
-from shy_sh.utils import run_shell, tools_to_human, syntax
+from shy_sh.utils import run_shell, tools_to_human, syntax, stream_shell
 from shy_sh.agents.chains.explain import explain
 
 
@@ -77,14 +77,22 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
             file.write(code)
             file.close()
             os.chmod(file.name, 0o755)
-            result = run_shell(file.name) or "Done"
+            result = ""
+            for chunk in stream_shell(file.name):
+                print(chunk, end="", flush=True)
+                result += chunk
+            result = result or "Done"
+
     else:
         with NamedTemporaryFile("w+", suffix=ext, delete=False) as file:
             file.write(code)
             file.close()
             os.chmod(file.name, 0o755)
-            result = run_shell(file.name) or "Done"
+            result = ""
+            for chunk in stream_shell(file.name):
+                print(chunk, end="", flush=True)
+                result += chunk
+            result = result or "Done"
             os.unlink(file.name)
     print()
-    print(syntax(result.strip(), theme="command"))
     return f"Script executed:\n{code}\n\nOutput:\n{result}", ToolMeta()

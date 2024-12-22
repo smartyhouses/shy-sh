@@ -14,8 +14,8 @@ def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
     else:
         choiches = ["y", "n", "c", "yes", "no", "copy"]
 
-    return Prompt.ask(
-        f"\n[dark_orange]Do you want to execute this command?[/] [bold magenta]\[[underline]Y[/]es/[underline]n[/]o/[underline]c[/]opy{'/[underline]e[/]xplain' if explain else ''}][/]",
+    return Prompt.ask(  # type: ignore
+        f"\n[dark_orange]Do you want to execute this command?[/] [bold magenta][[underline]Y[/]es/[underline]n[/]o/[underline]c[/]opy{'/[underline]e[/]xplain' if explain else ''}][/]",
         choices=choiches,
         default="y",
         show_default=False,
@@ -57,6 +57,19 @@ def decode_output(process):
     return response
 
 
+def decode_output2(text: bytes):
+    try:
+        response = text.decode()
+    except UnicodeDecodeError:
+        # windows
+        import ctypes
+
+        oemCP = ctypes.windll.kernel32.GetConsoleOutputCP()
+        encoding = "cp" + str(oemCP)
+        response = text.decode(encoding)
+    return response
+
+
 def run_shell(cmd: str):
     if cmd == "history" or cmd.startswith("history "):
         return get_shell_history()
@@ -67,6 +80,30 @@ def run_shell(cmd: str):
         shell=True,
     )
     return decode_output(result)
+
+
+def stream_shell(cmd: str):
+    if cmd == "history" or cmd.startswith("history "):
+        return get_shell_history()
+    result = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+    )
+    while result.poll() is None:
+        chunk = b""
+        if result.stdout is not None and result.stdout.readable():
+            chunk += result.stdout.read(1)
+        yield decode_output2(chunk)
+    remaining = b""
+    if result.stdout is not None and result.stdout.readable():
+        remaining += result.stdout.read()
+    if result.stderr is not None and result.stderr.readable():
+        remaining += result.stderr.read()
+
+    if remaining:
+        yield decode_output2(remaining)
 
 
 def detect_shell():

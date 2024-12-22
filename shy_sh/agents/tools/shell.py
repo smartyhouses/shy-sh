@@ -4,13 +4,13 @@ from rich import print
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm, run_shell, syntax
+from shy_sh.utils import ask_confirm, run_shell, syntax, stream_shell
 from shy_sh.agents.chains.explain import explain
 
 
 @tool(response_format="content_and_artifact")
 def shell(arg: str, state: Annotated[State, InjectedState]):
-    """to execute a shell command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass interactive commands, do not pass multiple lines commands, avoid to install new packages if not explicitly requested"""
+    """to execute a shell command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass multiple lines commands, avoid to install new packages if not explicitly requested"""
     print(f"🛠️ [bold green]{arg}[/bold green]")
     confirm = "y"
     if state["ask_before_execute"]:
@@ -34,6 +34,10 @@ def shell(arg: str, state: Annotated[State, InjectedState]):
         if ret:
             return ret
 
-    result = run_shell(arg) or "Success!"
-    print(syntax(result.strip(), theme="command"))
+    result = ""
+    for chunk in stream_shell(arg):
+        print(chunk, end="", flush=True)
+        result += chunk
+    result = result or "Success"
+
     return result, ToolMeta()

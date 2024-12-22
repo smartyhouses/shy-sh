@@ -21,11 +21,11 @@ class BaseLLMSchema(BaseModel):
 
 
 class LLMSchema(BaseLLMSchema):
-    agent_pattern: Literal["function_call", "react"] = "function_call"
+    agent_pattern: Literal["function_call", "react"] = "react"
 
 
 class _Settings(BaseModel):
-    llm: LLMSchema = LLMSchema(provider="ollama", name="llama3.1")
+    llm: LLMSchema = LLMSchema(provider="ollama", name="llama3.2")
 
     vision_llm: BaseLLMSchema | None = None
 

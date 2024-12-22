@@ -11,7 +11,7 @@ msg_template = dedent(
     [your python code]
     ```
 
-    Write a python script that accomplishes the task. Do not use interactive commands and try to avoid external libraries if not explicitly requested.
+    Write a python script that accomplishes the task. Try to avoid the usage of external libraries if not explicitly requested.
     Task: {input}
     """
 )

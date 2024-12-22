@@ -22,7 +22,7 @@ Options
 
 `pip install shy-sh`
 
-Use `shy --configure` to change LLM (default use ollama - llama3.1)
+Use `shy --configure` to change LLM (default use ollama - llama3.2)
 
 api_key format for aws bedrock: `region_name acces_key secret_key`
 
