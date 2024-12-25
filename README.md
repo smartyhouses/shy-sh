@@ -20,13 +20,19 @@ Options
 
 **Install**
 
-`pip install shy-sh`
+```sh
+pip install shy-sh
+```
 
-Use `shy --configure` to change LLM (default use ollama - llama3.2)
+Configure your LLM (default use ollama - llama3.2)
+
+```sh
+shy --configure
+```
 
 api_key format for aws bedrock: `region_name acces_key secret_key`
 
-supported providers: openai, anthropic, google, groq, aws, ollama
+Supported providers: openai, anthropic, google, groq, aws, ollama
 
 **Examples**
 
@@ -35,7 +41,7 @@ supported providers: openai, anthropic, google, groq, aws, ollama
 
 🛠️ find . -type f -name '*.py'
 
-Do you want to execute this command? [Y/n/c]:
+Do you want to execute this command? [Yes/no/copy/explain]:
 
 ./src/chat_models.py
 ./src/agent/tools.py
@@ -52,8 +58,6 @@ Do you want to execute this command? [Y/n/c]:
 
 🛠️ convert aaa.png -resize 200x200 aaa.jpg
 
-Success!
-
 🤖: I converted the file aaa.png to JPEG format and resized it to 200x200 pixels.
 ```
 
@@ -62,7 +66,7 @@ Success!
 
 🛠️ ffmpeg -i movie.avi -vf scale=1024:768 -c:v libx264 output.mp4
 
-Do you want to execute this command? [Y/n/c]: c
+Do you want to execute this command? [Yes/no/copy/explain]: c
 
 🤖: Command copied to the clipboard!
 ```
@@ -78,7 +82,7 @@ Do you want to execute this command? [Y/n/c]: c
 
 🛠️ ls | wc -l
 
-Do you want to execute this command? [Y/n/c]:
+Do you want to execute this command? [Yes/no/copy/explain]:
 
 5
 
