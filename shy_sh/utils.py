@@ -1,6 +1,7 @@
 import os
 import platform
 import subprocess
+import readline
 from typing import Literal
 from tiktoken import get_encoding
 from rich.prompt import Prompt
@@ -9,6 +10,7 @@ from langchain_core.messages import HumanMessage, ToolMessage
 
 
 def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
+    readline.clear_history()
     if explain:
         choiches = ["y", "n", "c", "e", "yes", "no", "copy", "explain"]
     else:

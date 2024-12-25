@@ -1,3 +1,4 @@
+import readline as readline
 from rich import print
 from rich.live import Live
 from shy_sh.agents.shy_agent.graph import shy_agent_graph
