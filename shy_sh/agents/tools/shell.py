@@ -36,7 +36,9 @@ def shell(arg: str, state: Annotated[State, InjectedState]):
 
     result = run_command(arg)
 
-    if len(result) > 12000:
+    if len(result) > 20000:
         print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
-        result = "...(Truncated)\n" + result[-10000:]
+        result = (
+            result[:9000] + "\n...(OUTPUT TOO LONG TRUNCATED!)...\n" + result[-9000:]
+        )
     return result, ToolMeta()

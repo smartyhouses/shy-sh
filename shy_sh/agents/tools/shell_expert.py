@@ -73,9 +73,13 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
             os.chmod(file.name, 0o755)
             result = run_command(file.name)
 
-            if len(result) > 12000:
+            if len(result) > 20000:
                 print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
-                result = "...(Truncated)\n" + result[-10000:]
+                result = (
+                    result[:9000]
+                    + "\n...(OUTPUT TOO LONG TRUNCATED!)...\n"
+                    + result[-9000:]
+                )
 
     else:
         with NamedTemporaryFile("w+", suffix=ext, delete=False) as file:
@@ -84,12 +88,16 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
             os.chmod(file.name, 0o755)
             result = run_command(file.name)
 
-            if len(result) > 12000:
+            if len(result) > 20000:
                 print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
-                result = "...(Truncated)\n" + result[-10000:]
+                result = (
+                    result[:9000]
+                    + "\n...(OUTPUT TOO LONG TRUNCATED!)...\n"
+                    + result[-9000:]
+                )
             os.unlink(file.name)
     print()
     ret = f"Script executed:\n{code}\n\nOutput:\n{result}"
-    if len(ret) > 12000:
+    if len(ret) > 20000:
         ret = f"Output:\n{result}"
     return ret, ToolMeta()
