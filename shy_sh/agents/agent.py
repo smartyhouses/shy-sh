@@ -1,9 +1,9 @@
-import readline as readline
 from rich import print
 from rich.live import Live
 from shy_sh.agents.shy_agent.graph import shy_agent_graph
 from shy_sh.agents.misc import get_graph_inputs, run_few_shot_examples
 from shy_sh.agents.chains.screenshot import screenshot_chain
+from shy_sh.utils import save_history
 from langchain_core.messages import HumanMessage
 
 
@@ -51,6 +51,7 @@ class ShyAgent:
             self._run(task)
         if self.interactive:
             new_task = input("\n✨: ")
+            save_history()
             if new_task == "exit":
                 print("\n🤖: 👋 Bye!\n")
                 return

@@ -9,6 +9,19 @@ from rich.prompt import Prompt
 from rich.syntax import Syntax
 from langchain_core.messages import HumanMessage, ToolMessage
 
+RL_HISTORY_FILE = os.path.expanduser("~/.config/shy/.history")
+
+
+def load_history():
+    try:
+        readline.read_history_file(RL_HISTORY_FILE)
+    except FileNotFoundError:
+        pass
+
+
+def save_history():
+    readline.write_history_file(RL_HISTORY_FILE)
+
 
 def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
     readline.clear_history()
@@ -17,7 +30,7 @@ def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
     else:
         choiches = ["y", "n", "c", "yes", "no", "copy"]
 
-    return Prompt.ask(  # type: ignore
+    ret = Prompt.ask(
         f"\n[dark_orange]Do you want to execute this command?[/] [bold magenta][[underline]Y[/]es/[underline]n[/]o/[underline]c[/]opy{'/[underline]e[/]xplain' if explain else ''}][/]",
         choices=choiches,
         default="y",
@@ -25,6 +38,9 @@ def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
         show_choices=False,
         case_sensitive=False,
     ).lower()[0]
+    readline.clear_history()
+    load_history()
+    return ret  # type: ignore
 
 
 PRINT_THEMES = {
