@@ -2,23 +2,7 @@
 
 Sh shell AI copilot
 
-**Help**
-
-Usage: shy [OPTIONS] [PROMPT]...
-
-Arguments
-prompt [PROMPT]
-
-Options
-
-- -i Interactive mode [default false if a prompt is passed else true]
-- -x Do not ask confirmation before executing scripts
-- -s or start your message with /screen: Take a screenshot to be analyzed with the prompt (requires vision model)
-- -e Explain the given shell command
-- --configure Configure LLM
-- --help Show this message and exit.
-
-**Install**
+## Install
 
 ```sh
 pip install shy-sh
@@ -34,7 +18,23 @@ api_key format for aws bedrock: `region_name acces_key secret_key`
 
 Supported providers: openai, anthropic, google, groq, aws, ollama
 
-**Examples**
+## Help
+
+Usage: `shy [OPTIONS] [PROMPT]...`
+
+Arguments
+prompt [PROMPT]
+
+Options
+
+- -i Interactive mode [default false if a prompt is passed else true]
+- -x Do not ask confirmation before executing scripts
+- -s or start your message with /screen: Take a screenshot to be analyzed with the prompt (requires vision model)
+- -e Explain the given shell command
+- --configure Configure LLM
+- --help Show this message and exit.
+
+## Examples
 
 ```sh
 > shy find all python files in this folder
