@@ -11,7 +11,7 @@ from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
 from shy_sh.utils import ask_confirm, detect_shell, detect_os
 from shy_sh.agents.chains.shell_expert import shexpert_chain
-from shy_sh.utils import run_shell, tools_to_human, syntax, stream_shell
+from shy_sh.utils import run_command, tools_to_human, syntax
 from shy_sh.agents.chains.explain import explain
 
 
@@ -32,17 +32,11 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
     with Live() as live:
         for chunk in shexpert_chain.stream(inputs):
             code += chunk
-            live.update(
-                syntax(code, theme="command"),
-                refresh=True,
-            )
+            live.update(syntax(code, theme="command"))
 
         code = re.sub(r"```\S+\n", "", code)
         code = code[: code.rfind("```")]
-        live.update(
-            syntax(code.strip(), theme="command"),
-            refresh=True,
-        )
+        live.update(syntax(code.strip(), theme="command"))
 
     confirm = "y"
     if state["ask_before_execute"]:
@@ -77,22 +71,25 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
             file.write(code)
             file.close()
             os.chmod(file.name, 0o755)
-            result = ""
-            for chunk in stream_shell(file.name):
-                print(chunk, end="", flush=True)
-                result += chunk
-            result = result or "Done"
+            result = run_command(file.name)
+
+            if len(result) > 12000:
+                print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
+                result = "...(Truncated)\n" + result[-10000:]
 
     else:
         with NamedTemporaryFile("w+", suffix=ext, delete=False) as file:
             file.write(code)
             file.close()
             os.chmod(file.name, 0o755)
-            result = ""
-            for chunk in stream_shell(file.name):
-                print(chunk, end="", flush=True)
-                result += chunk
-            result = result or "Done"
+            result = run_command(file.name)
+
+            if len(result) > 12000:
+                print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
+                result = "...(Truncated)\n" + result[-10000:]
             os.unlink(file.name)
     print()
-    return f"Script executed:\n{code}\n\nOutput:\n{result}", ToolMeta()
+    ret = f"Script executed:\n{code}\n\nOutput:\n{result}"
+    if len(ret) > 12000:
+        ret = f"Output:\n{result}"
+    return ret, ToolMeta()

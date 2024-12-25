@@ -1,13 +1,14 @@
+import os
+import sys
 import pyperclip
 from typing import Annotated
-from io import StringIO
+from tempfile import NamedTemporaryFile
 from rich import print
 from rich.live import Live
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
-from contextlib import redirect_stdout, redirect_stderr
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm, tools_to_human, syntax
+from shy_sh.utils import ask_confirm, tools_to_human, syntax, run_python
 from shy_sh.agents.chains.python_expert import pyexpert_chain
 from shy_sh.agents.chains.explain import explain
 
@@ -25,7 +26,7 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
     with Live() as live:
         for chunk in pyexpert_chain.stream(inputs):
             code += chunk
-            live.update(syntax(code, "python", "command"), refresh=True)
+            live.update(syntax(code, "python", "command"))
         code = code.replace("```python\n", "")
         code = code[: code.rfind("```")]
         live.update(syntax(code.strip(), "python", "command"))
@@ -52,14 +53,33 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
         if ret:
             return ret
 
-    stdout = StringIO()
-    stderr = StringIO()
-    with redirect_stderr(stderr):
-        with redirect_stdout(stdout):
-            exec(code, {"__name__": "__main__"})
-    output = stdout.getvalue().strip() or stderr.getvalue().strip()[-500:] or "Done"
-    print(syntax(output, theme="command"))
+    if sys.version_info >= (3, 11):
+        with NamedTemporaryFile("w+", suffix=".py", delete_on_close=False) as file:
+            file.write(code)
+            file.close()
+            os.chmod(file.name, 0o755)
+            result = run_python(file.name)
+
+            if len(result) > 12000:
+                print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
+                result = "...(Truncated)\n" + result[-10000:]
+
+    else:
+        with NamedTemporaryFile("w+", suffix=ext, delete=False) as file:
+            file.write(code)
+            file.close()
+            os.chmod(file.name, 0o755)
+            result = run_python(file.name)
+
+            if len(result) > 12000:
+                print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
+                result = "...(Truncated)\n" + result[-10000:]
+            os.unlink(file.name)
+
+    ret = f"\nScript executed:\n```python\n{code.strip()}\n```\n\nOutput:\n{result}"
+    if len(ret) > 12000:
+        ret = f"Output:\n{result}"
     return (
-        f"\nScript executed:\n```python\n{code.strip()}\n```\n\nOutput:\n{output}",
+        ret,
         ToolMeta(),
     )

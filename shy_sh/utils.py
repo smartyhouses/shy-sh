@@ -1,4 +1,5 @@
 import os
+import pty
 import platform
 import subprocess
 import readline
@@ -84,6 +85,21 @@ def run_shell(cmd: str):
     return decode_output(result)
 
 
+def run_pty(cmd: str):
+    if cmd == "history" or cmd.startswith("history "):
+        return get_shell_history()
+    stdout = b""
+
+    def read(fd):
+        nonlocal stdout
+        ret = os.read(fd, 1024)
+        stdout += ret
+        return ret
+
+    ret_code = pty.spawn([detect_raw_shell(), "-c", cmd], read)
+    return ret_code, decode_output2(stdout)
+
+
 def stream_shell(cmd: str):
     if cmd == "history" or cmd.startswith("history "):
         return get_shell_history()
@@ -108,8 +124,28 @@ def stream_shell(cmd: str):
         yield decode_output2(remaining)
 
 
+def run_command(cmd: str):
+    if detect_shell() in ["powershell", "cmd"]:
+        result = ""
+        for chunk in stream_shell(cmd):
+            print(chunk, end="", flush=True)
+            result += chunk
+    else:
+        ret_code, result = run_pty(cmd)
+        result = result or ("Success" if ret_code == 0 else "Failed")
+    return result
+
+
+def run_python(file: str):
+    return run_command(f"python {file}")
+
+
+def detect_raw_shell():
+    return os.environ.get("SHELL") or os.environ.get("COMSPEC") or "sh"
+
+
 def detect_shell():
-    shell = os.environ.get("SHELL") or os.environ.get("COMSPEC") or "sh"
+    shell = detect_raw_shell()
     shell = shell.lower().split("/")[-1]
     if "powershell" in shell:
         return "powershell"

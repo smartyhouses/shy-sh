@@ -4,7 +4,7 @@ from rich import print
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm, run_shell, syntax, stream_shell
+from shy_sh.utils import ask_confirm, run_command
 from shy_sh.agents.chains.explain import explain
 
 
@@ -34,10 +34,9 @@ def shell(arg: str, state: Annotated[State, InjectedState]):
         if ret:
             return ret
 
-    result = ""
-    for chunk in stream_shell(arg):
-        print(chunk, end="", flush=True)
-        result += chunk
-    result = result or "Success"
+    result = run_command(arg)
 
+    if len(result) > 12000:
+        print("\n🐳 [bold red]Output too long! It will be truncated[/bold red]")
+        result = "...(Truncated)\n" + result[-10000:]
     return result, ToolMeta()
