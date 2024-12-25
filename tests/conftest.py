@@ -27,6 +27,13 @@ def mock_app_settings():
     )
 
 
+@pytest.fixture(autouse=True)
+def mock_readline(mocker):
+    mocker.patch("readline.set_history_length")
+    mocker.patch("readline.read_history_file")
+    mocker.patch("readline.write_history_file")
+
+
 @pytest.fixture()
 def exec():
     runner = CliRunner()
