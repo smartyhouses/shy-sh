@@ -10,7 +10,7 @@ from pydantic_settings import (
 )
 from pydantic import BaseModel
 from pathlib import Path
-from questionary import unsafe_prompt, confirm, text, Style
+from questionary import confirm, text, select, password, Style
 
 
 class BaseLLMSchema(BaseModel):
@@ -99,52 +99,43 @@ def _try_float(x):
 
 
 def configure_yaml():
+    provider = select(
+        message="Provider:",
+        choices=PROVIDERS,
+        default=settings.llm.provider,
+        **_select_style,
+    ).unsafe_ask()
+    if provider != "ollama":
+        api_key = password(
+            message="API Key:",
+            default=settings.llm.api_key,
+            **_text_style,
+        ).unsafe_ask()
+    else:
+        api_key = settings.llm.api_key
+    model = input_model(provider, api_key, settings.llm.name)
+    agent_pattern = select(
+        message="Agent Pattern:",
+        choices=["function_call", "react"],
+        default=settings.llm.agent_pattern,
+        **_select_style,
+    ).unsafe_ask()
+    temperature = text(
+        message="Temperature:",
+        default=str(settings.llm.temperature),
+        validate=lambda x: _try_float(x),
+        **_text_style,
+    ).unsafe_ask()
 
-    questions = [
-        {
-            "type": "select",
-            "name": "provider",
-            "message": "Provider:",
-            "choices": PROVIDERS,
-            "default": settings.llm.provider,
-            **_select_style,
-        },
-        {
-            "type": "select",
-            "name": "agent_pattern",
-            "message": "Agent Pattern:",
-            "choices": ["function_call", "react"],
-            "default": settings.llm.agent_pattern,
-            **_select_style,
-        },
-        {
-            "type": "text",
-            "name": "name",
-            "message": "Model:",
-            "default": settings.llm.name,
-            **_text_style,
-        },
-        {
-            "type": "password",
-            "name": "api_key",
-            "message": "API Key:",
-            "default": settings.llm.api_key,
-            **_text_style,
-        },
-        {
-            "type": "text",
-            "name": "temperature",
-            "message": "Temperature:",
-            "default": str(settings.llm.temperature),
-            "validate": lambda x: _try_float(x),
-            **_text_style,
-        },
-    ]
+    llm = {
+        "provider": provider,
+        "name": model,
+        "api_key": api_key,
+        "temperature": float(temperature),
+        "agent_pattern": agent_pattern,
+    }
 
-    llm = unsafe_prompt(questions)
     language = text("Language:", default=settings.language, **_text_style).unsafe_ask()
-
-    llm["temperature"] = float(llm["temperature"])
 
     vision_llm = settings.vision_llm.model_dump() if settings.vision_llm else llm.copy()
 
@@ -171,51 +162,139 @@ def configure_yaml():
 
 
 def configure_vision_model():
-    questions = [
-        {
-            "type": "select",
-            "name": "provider",
-            "message": "Provider:",
-            "choices": PROVIDERS,
-            "default": (
-                settings.vision_llm.provider
-                if settings.vision_llm
-                else settings.llm.provider
-            ),
-            **_select_style,
-        },
-        {
-            "type": "text",
-            "name": "name",
-            "message": "Model:",
-            "default": (
-                settings.vision_llm.name if settings.vision_llm else settings.llm.name
-            ),
-            **_text_style,
-        },
-        {
-            "type": "password",
-            "name": "api_key",
-            "message": "API Key:",
-            "default": (
+    provider = select(
+        message="Provider:",
+        choices=PROVIDERS,
+        default=(
+            settings.vision_llm.provider
+            if settings.vision_llm
+            else settings.llm.provider
+        ),
+        **_select_style,
+    ).unsafe_ask()
+    if provider != "ollama":
+        api_key = password(
+            message="API Key:",
+            default=(
                 settings.vision_llm.api_key
                 if settings.vision_llm
                 else settings.llm.api_key
             ),
             **_text_style,
-        },
-        {
-            "type": "text",
-            "name": "temperature",
-            "message": "Temperature:",
-            "default": str(
-                settings.vision_llm.temperature
-                if settings.vision_llm
-                else settings.llm.temperature
-            ),
-            "validate": lambda x: _try_float(x),
-            **_text_style,
-        },
-    ]
+        ).unsafe_ask()
+    else:
+        api_key = (
+            settings.vision_llm.api_key if settings.vision_llm else settings.llm.api_key
+        )
+    model = input_model(
+        provider,
+        api_key,
+        settings.vision_llm.name if settings.vision_llm else settings.llm.name,
+    )
+    temperature = text(
+        message="Temperature:",
+        default=str(
+            settings.vision_llm.temperature
+            if settings.vision_llm
+            else settings.llm.temperature
+        ),
+        validate=lambda x: _try_float(x),
+        **_text_style,
+    ).unsafe_ask()
 
-    return unsafe_prompt(questions)
+    return {
+        "provider": provider,
+        "name": model,
+        "api_key": api_key,
+        "temperature": float(temperature),
+    }
+
+
+def input_model(provider: str, api_key: str, default_model: str | None = None):
+    try:
+        match provider:
+            case "ollama":
+                from ollama import list
+
+                r = list()
+                model_list = [l["name"].replace(":latest", "") for l in r["models"]]
+                return select(
+                    message="Model:",
+                    choices=model_list,
+                    default=default_model if default_model in model_list else None,
+                    **_select_style,
+                ).unsafe_ask()
+            case "openai":
+                from openai import OpenAI
+
+                r = OpenAI(api_key=api_key).models.list()
+                model_list = [l.id for l in r.data]
+                return select(
+                    message="Model:",
+                    choices=model_list,
+                    default=default_model if default_model in model_list else None,
+                    **_select_style,
+                ).unsafe_ask()
+            case "google":
+                from google.generativeai.client import glm
+                from google.auth.api_key import Credentials
+
+                r = glm.ModelServiceClient(
+                    credentials=Credentials(api_key)
+                ).list_models()
+                model_list = [l.name.replace("models/", "", 1) for l in r]
+                return select(
+                    message="Model:",
+                    choices=model_list,
+                    default=default_model if default_model in model_list else None,
+                    **_select_style,
+                ).unsafe_ask()
+            case "anthropic":
+                import requests
+
+                r = requests.get(
+                    "https://api.anthropic.com/v1/models",
+                    headers={"x-api-key": api_key, "anthropic-version": "2023-06-01"},
+                ).json()
+                model_list = [l["id"] for l in r["data"]]
+
+                return select(
+                    message="Model:",
+                    choices=model_list,
+                    default=default_model if default_model in model_list else None,
+                    **_select_style,
+                ).unsafe_ask()
+            case "groq":
+                from groq import Client
+
+                r = Client(api_key=api_key).models.list()
+                model_list = [l.id for l in r.data]
+                return select(
+                    message="Model:",
+                    choices=model_list,
+                    default=default_model if default_model in model_list else None,
+                    **_select_style,
+                ).unsafe_ask()
+            case "aws":
+                from boto3 import client
+
+                region, access_key, secret_key = api_key.split(" ")
+                r = client(
+                    "bedrock",
+                    region_name=region,
+                    aws_access_key_id=access_key,
+                    aws_secret_access_key=secret_key,
+                ).list_foundation_models(
+                    byOutputModality="TEXT",
+                )
+                model_list = [l["modelId"] for l in r["modelSummaries"]]
+                return select(
+                    message="Model:",
+                    choices=model_list,
+                    default=default_model if default_model in model_list else None,
+                    **_select_style,
+                ).unsafe_ask()
+            case _:
+                raise ValueError("Invalid provider")
+    except Exception:
+        return text(message="Model:", **_text_style).unsafe_ask()
