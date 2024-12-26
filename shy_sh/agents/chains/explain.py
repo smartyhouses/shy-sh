@@ -50,10 +50,7 @@ def explain(inputs, ask_execute=True):
             }
         ):
             text += chunk
-            live.update(
-                syntax(text),
-                refresh=True,
-            )
+            live.update(syntax(text))
     print()
 
     if not ask_execute:

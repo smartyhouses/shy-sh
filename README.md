@@ -2,6 +2,8 @@
 
 Sh shell AI copilot
 
+![image_cover](./docs/images/sh.gif)
+
 ## Install
 
 ```sh
@@ -98,3 +100,7 @@ Do you want to execute this command? [Yes/no/copy/explain]:
 The results are then piped to `wc -l`, which counts the number of line.
 In conclusion, the command presents the total count of Python files (*.py) located within the current directory and its subdirectories.
 ```
+
+![image_python](./docs/images/python.gif)
+
+![image_ascii](./docs/images/ascii.gif)
