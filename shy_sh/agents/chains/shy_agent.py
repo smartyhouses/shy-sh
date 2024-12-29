@@ -8,7 +8,7 @@ from textwrap import dedent
 SYS_TEMPLATES = {
     "function_call": dedent(
         """
-        You are a helpfull shell assistant. The current date and time is {timestamp}.
+        You are a helpful shell assistant. The current date and time is {timestamp}.
         Solve the tasks that I request you to do.
                             
         Answer truthfully with the informations you have. Output your answer in {lang_spec} language.
@@ -16,7 +16,7 @@ SYS_TEMPLATES = {
     ),
     "react": dedent(
         """
-        You are a helpfull shell assistant. The current date and time is {timestamp}.
+        You are a helpful shell assistant. The current date and time is {timestamp}.
         Solve the tasks that I request you to do.
 
         You can use the following tools to accomplish the tasks:
