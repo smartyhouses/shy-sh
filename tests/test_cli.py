@@ -28,6 +28,7 @@ def test_interactive_question(exec, mocker):
 
 
 def test_use_shell_tool(exec, mocker):
+    confirm = mocker.patch("shy_sh.agents.tools.shell.ask_confirm", return_value="y")
     with mock_llm(
         mocker,
         [
@@ -35,14 +36,11 @@ def test_use_shell_tool(exec, mocker):
             "fine thanks",
         ],
     ):
-        result = exec("how are you", input="y\n")
+        result = exec("how are you")
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
-        assert (
-            "Do you want to execute this command? [Yes/no/copy/explain]"
-            in result.stdout
-        )
+        assert confirm.call_count == 1
         assert "🛠️ echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
@@ -68,6 +66,9 @@ def test_use_shell_tool_no_confirmation(exec, mocker):
 
 
 def test_use_shell_expert_tool(exec, mocker):
+    confirm = mocker.patch(
+        "shy_sh.agents.tools.shell_expert.ask_confirm", return_value="y"
+    )
     with mock_llm(
         mocker,
         [
@@ -76,20 +77,20 @@ def test_use_shell_expert_tool(exec, mocker):
             "fine thanks",
         ],
     ):
-        result = exec("how are you", input="y\n")
+        result = exec("how are you")
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
         assert "💻 Generating shell script..." in result.stdout
-        assert (
-            "Do you want to execute this command? [Yes/no/copy/explain]"
-            in result.stdout
-        )
+        assert confirm.call_count == 1
         assert "echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
 
 def test_use_shell_expert_tool_no_confirmation(exec, mocker):
+    confirm = mocker.patch(
+        "shy_sh.agents.tools.shell_expert.ask_confirm", return_value="y"
+    )
     with mock_llm(
         mocker,
         [
@@ -98,20 +99,20 @@ def test_use_shell_expert_tool_no_confirmation(exec, mocker):
             "fine thanks",
         ],
     ):
-        result = exec("-x how are you", input="y\n")
+        result = exec("-x how are you")
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
         assert "💻 Generating shell script..." in result.stdout
-        assert (
-            "Do you want to execute this command? [Yes/no/copy/explain]"
-            not in result.stdout
-        )
+        assert confirm.call_count == 0
         assert "echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
 
 def test_use_python_expert_tool(exec, mocker):
+    confirm = mocker.patch(
+        "shy_sh.agents.tools.python_expert.ask_confirm", return_value="y"
+    )
     with mock_llm(
         mocker,
         [
@@ -120,20 +121,20 @@ def test_use_python_expert_tool(exec, mocker):
             "fine thanks",
         ],
     ):
-        result = exec("how are you", input="y\n")
+        result = exec("how are you")
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
         assert "🐍 Generating python script..." in result.stdout
-        assert (
-            "Do you want to execute this command? [Yes/no/copy/explain]"
-            in result.stdout
-        )
+        assert confirm.call_count == 1
         assert "print('fine thanks')" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
 
 def test_use_python_expert_tool_no_confirmation(exec, mocker):
+    confirm = mocker.patch(
+        "shy_sh.agents.tools.python_expert.ask_confirm", return_value="y"
+    )
     with mock_llm(
         mocker,
         [
@@ -142,15 +143,12 @@ def test_use_python_expert_tool_no_confirmation(exec, mocker):
             "fine thanks",
         ],
     ):
-        result = exec("-x how are you", input="y\n")
+        result = exec("-x how are you")
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
         assert "🐍 Generating python script..." in result.stdout
-        assert (
-            "Do you want to execute this command? [Yes/no/copy/explain]"
-            not in result.stdout
-        )
+        assert confirm.call_count == 0
         assert "print('fine thanks')" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
@@ -163,7 +161,7 @@ def test_use_shell_history_tool(exec, mocker):
             "history readed",
         ],
     ):
-        result = exec("how are you", input="y\n")
+        result = exec("how are you")
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
@@ -184,7 +182,7 @@ def test_use_tool_chain(exec, mocker):
             "fine thanks",
         ],
     ):
-        result = exec("-x how are you", input="y\n")
+        result = exec("-x how are you")
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout

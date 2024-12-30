@@ -23,16 +23,17 @@ def save_history():
     readline.write_history_file(RL_HISTORY_FILE)
 
 
-def ask_confirm(explain=True) -> Literal["y", "n", "c", "e"]:
+def ask_confirm(explain=True, alternatives=True) -> Literal["y", "n", "c", "e", "a"]:
     readline.clear_history()
+    choices = ["y", "n", "c", "yes", "no", "copy"]
     if explain:
-        choiches = ["y", "n", "c", "e", "yes", "no", "copy", "explain"]
-    else:
-        choiches = ["y", "n", "c", "yes", "no", "copy"]
+        choices.extend(["e", "explain"])
+    if alternatives:
+        choices.extend(["a", "alternatives"])
 
     ret = Prompt.ask(
-        f"\n[dark_orange]Do you want to execute this command?[/] [bold magenta][[underline]Y[/]es/[underline]n[/]o/[underline]c[/]opy{'/[underline]e[/]xplain' if explain else ''}][/]",
-        choices=choiches,
+        f"\n [dark_orange]Do you want to execute this command?[/] [bold magenta][[underline]Y[/]es/[underline]n[/]o/[underline]c[/]opy{'/[underline]e[/]xplain' if explain else ''}{'/[underline]a[/]lternatives' if alternatives else ''}][/]",
+        choices=choices,
         default="y",
         show_default=False,
         show_choices=False,

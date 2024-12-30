@@ -8,6 +8,7 @@ from shy_sh.models import ToolMeta
 from shy_sh.settings import settings
 from textwrap import dedent
 from rich.live import Live
+from rich import print
 
 
 msg_template = dedent(
@@ -38,7 +39,7 @@ def explain_chain(_):
     return prompt | llm | StrOutputParser()
 
 
-def explain(inputs, ask_execute=True):
+def explain(inputs, ask_execute=True, ask_alternative=False):
     with Live() as live:
         text = "🤖: "
         for chunk in explain_chain.stream(
@@ -55,7 +56,8 @@ def explain(inputs, ask_execute=True):
 
     if not ask_execute:
         return
-    confirm = ask_confirm(explain=False)
+    print(f"🛠️ [bold green]{inputs['script']}[/bold green]")
+    confirm = ask_confirm(explain=False, alternatives=ask_alternative)
     if confirm == "n":
         return "Command canceled by user", ToolMeta(
             stop_execution=True, skip_print=True
@@ -63,3 +65,5 @@ def explain(inputs, ask_execute=True):
     elif confirm == "c":
         pyperclip.copy(inputs["script"])
         return "Script copied to the clipboard!", ToolMeta(stop_execution=True)
+    elif confirm == "a":
+        return "alternative"
