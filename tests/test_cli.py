@@ -45,6 +45,49 @@ def test_use_shell_tool(exec, mocker):
         assert "🤖: fine thanks" in result.stdout
 
 
+def test_use_shell_tool_with_alternatives(exec, mocker):
+    confirm = mocker.patch("shy_sh.agents.tools.shell.ask_confirm", return_value="a")
+    select = mocker.patch(
+        "shy_sh.agents.tools.shell._select_alternative_command",
+        return_value="echo fine thanks",
+    )
+    with mock_llm(
+        mocker,
+        [
+            '{"tool": "shell", "arg": "echo fine thanks", "thoughts": "test"}',
+            "fine thanks",
+        ],
+    ):
+        result = exec("how are you")
+        assert result.exit_code == 0
+
+        assert "✨: how are you" in result.stdout
+        assert confirm.call_count == 1
+        assert select.call_count == 1
+        assert "🛠️ echo fine thanks" in result.stdout
+        assert "🤖: fine thanks" in result.stdout
+
+
+def test_use_shell_tool_with_explain(exec, mocker):
+    confirm = mocker.patch(
+        "shy_sh.agents.tools.shell.ask_confirm", side_effect=["e", "y"]
+    )
+    with mock_llm(
+        mocker,
+        [
+            '{"tool": "shell", "arg": "echo fine thanks", "thoughts": "test"}',
+            "fine thanks",
+        ],
+    ):
+        result = exec("how are you")
+        assert result.exit_code == 0
+
+        assert "✨: how are you" in result.stdout
+        assert confirm.call_count == 2
+        assert "🛠️ echo fine thanks" in result.stdout
+        assert "🤖: fine thanks" in result.stdout
+
+
 def test_use_shell_tool_no_confirmation(exec, mocker):
     with mock_llm(
         mocker,

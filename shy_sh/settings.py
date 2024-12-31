@@ -138,7 +138,7 @@ def configure_yaml():
 
     language = text("Language:", default=settings.language, **_text_style).unsafe_ask()
     safe_mode = confirm(
-        "Safe mode:\n   When enabled, no commands or scripts will be executed on your system you can only receive suggestions.\n   This feature is recommended for beginners",
+        "Safe Mode:",
         default=settings.safe_mode,
         **_text_style,
     ).unsafe_ask()
@@ -224,7 +224,7 @@ def input_model(provider: str, api_key: str, default_model: str | None = None):
                 from ollama import list
 
                 r = list()
-                model_list = [l["name"].replace(":latest", "") for l in r["models"]]
+                model_list = [l.model.replace(":latest", "") for l in r["models"]]
                 return select(
                     message="Model:",
                     choices=model_list,

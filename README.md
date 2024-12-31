@@ -16,8 +16,6 @@ Configure your LLM (default use ollama - llama3.2)
 shy --configure
 ```
 
-api_key format for aws bedrock: `region_name acces_key secret_key`
-
 Supported providers: openai, anthropic, google, groq, aws, ollama
 
 ## Help
@@ -31,10 +29,36 @@ Options
 
 - -i Interactive mode [default false if a prompt is passed else true]
 - -x Do not ask confirmation before executing scripts
-- -s or start your message with /screen: Take a screenshot to be analyzed with the prompt (requires vision model)
+- -s or start your message with /screen: (Experimental) Take a screenshot to be analyzed with the prompt (requires vision model)
 - -e Explain the given shell command
 - --configure Configure LLM
 - --help Show this message and exit.
+
+## Settings
+
+```sh
+shy --configure
+ Provider: ollama
+ Model: llama3.2
+ Agent Pattern: react
+ Temperature: 0.0
+ Language: klingon
+ Safe Mode: Yes
+ Setup Vision Model? No
+```
+
+#### Configurable settings
+
+- Provider: The LLM provider to use [OpenAI, Anthropic, Google, Groq, AWS Bedrock, Ollama(local)].
+- API Key: The API key for the LLM provider. (Format for aws bedrock: `region_name acces_key secret_key`)
+- Model: The LLM model to use.
+- Agent Pattern: react or function_call. (If you are not using OpenAI, Anthropic or Google, react is recommended)
+- Temperature: The LLM model's temperature setting.
+- Language: The language for the LLM's final answers.
+- Safe Mode: When enabled, no commands or scripts will be executed on your system; you will only receive suggestions. This feature is recommended for beginners.
+- Setup Vision Model: Experimental
+
+All the settings are saved in `~/.config/shy/config.yml`
 
 ## Examples
 
@@ -43,7 +67,7 @@ Options
 
 🛠️ find . -type f -name '*.py'
 
-Do you want to execute this command? [Yes/no/copy/explain]:
+Do you want to execute this command? [Yes/no/copy/explain/alternatives]:
 
 ./src/chat_models.py
 ./src/agent/tools.py
@@ -68,7 +92,7 @@ Do you want to execute this command? [Yes/no/copy/explain]:
 
 🛠️ ffmpeg -i movie.avi -vf scale=1024:768 -c:v libx264 output.mp4
 
-Do you want to execute this command? [Yes/no/copy/explain]: c
+Do you want to execute this command? [Yes/no/copy/explain/alternatives]: c
 
 🤖: Command copied to the clipboard!
 ```
@@ -84,7 +108,7 @@ Do you want to execute this command? [Yes/no/copy/explain]: c
 
 🛠️ ls | wc -l
 
-Do you want to execute this command? [Yes/no/copy/explain]:
+Do you want to execute this command? [Yes/no/copy/explain/alternatives]:
 
 5
 
@@ -104,3 +128,7 @@ In conclusion, the command presents the total count of Python files (*.py) locat
 ![image_python](./docs/images/python.gif)
 
 ![image_ascii](./docs/images/ascii.gif)
+
+## Privacy
+
+If you are not using Ollama as provider, please note that information such as the current path, your operating system name, and the last commands executed in the shell may be included in the LLM context.

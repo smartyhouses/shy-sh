@@ -1,5 +1,4 @@
 import os
-import pty
 import platform
 import subprocess
 import readline
@@ -24,7 +23,7 @@ def save_history():
     readline.write_history_file(RL_HISTORY_FILE)
 
 
-def ask_confirm(explain=True, alternatives=True) -> Literal["y", "n", "c", "e", "a"]:
+def ask_confirm(explain=True, alternatives=False) -> Literal["y", "n", "c", "e", "a"]:
     readline.clear_history()
     choices = ["n", "c", "no", "copy"]
     if explain:
@@ -114,6 +113,8 @@ def run_shell(cmd: str):
 
 
 def run_pty(cmd: str):
+    import pty
+
     if cmd == "history" or cmd.startswith("history "):
         return get_shell_history()
     stdout = b""

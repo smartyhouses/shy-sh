@@ -12,7 +12,7 @@ def mock_settings(config):
 
 
 @contextmanager
-def mock_llm(mocker, responses=["test"]):
+def mock_llm(mocker, responses=["test", "test2", "test3", "test4"]):
     def to_ai_message(x):
         return AIMessage(content=x)
 
