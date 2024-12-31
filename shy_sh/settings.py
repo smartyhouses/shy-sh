@@ -30,6 +30,7 @@ class _Settings(BaseModel):
     vision_llm: BaseLLMSchema | None = None
 
     language: str = ""
+    safe_mode: bool = False
 
 
 class Settings(BaseSettings, _Settings):
@@ -136,6 +137,11 @@ def configure_yaml():
     }
 
     language = text("Language:", default=settings.language, **_text_style).unsafe_ask()
+    safe_mode = confirm(
+        "Safe mode:\n   When enabled, no commands or scripts will be executed on your system you can only receive suggestions.\n   This feature is recommended for beginners",
+        default=settings.safe_mode,
+        **_text_style,
+    ).unsafe_ask()
 
     vision_llm = settings.vision_llm.model_dump() if settings.vision_llm else llm.copy()
 
@@ -154,6 +160,7 @@ def configure_yaml():
                     "llm": llm,
                     "vision_llm": vision_llm,
                     "language": language,
+                    "safe_mode": safe_mode,
                 }
             )
         )

@@ -14,6 +14,7 @@ from shy_sh.utils import (
 )
 from shy_sh.agents.chains.explain import explain
 from shy_sh.agents.chains.alternative_commands import get_alternative_commands
+from shy_sh.settings import settings
 
 _text_style = {
     "qmark": "",
@@ -59,6 +60,9 @@ def shell(arg: str, state: Annotated[State, InjectedState]):
             return "Command interrupted by the user", ToolMeta(
                 stop_execution=True, skip_print=True
             )
+        if settings.safe_mode:
+            pyperclip.copy(r)
+            return "Command copied to the clipboard!", ToolMeta(stop_execution=True)
         arg = r
         result += f"The user decided to execute this alternative command `{arg}`\n\n"
     elif confirm == "e":
@@ -103,17 +107,25 @@ def _select_alternative_command(arg, state):
     }
     cmds = get_alternative_commands(inputs)
     r = select(
-        "Pick the command to execute",
+        (
+            "Pick the command to copy to the clipboard"
+            if settings.safe_mode
+            else "Pick the command to execute"
+        ),
         choices=[
             Choice([("fg:ansired bold", "Cancel")], "None"),
             Choice(
                 [
                     ("fg:ansiyellow bold", arg),
                     ("fg:gray", " # Original command"),
-                ]
+                ],
+                arg,
             ),
             *[
-                Choice([("fg:ansigreen bold", c[1]), ("fg:gray", " " + c[0])])
+                Choice(
+                    [("fg:ansigreen bold", c[1]), ("fg:gray", " " + c[0])],
+                    c[1],
+                )
                 for c in cmds
             ],
         ],
