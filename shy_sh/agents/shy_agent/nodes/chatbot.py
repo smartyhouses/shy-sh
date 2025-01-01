@@ -39,7 +39,8 @@ def chatbot(state: State):
         if not message or (settings.llm.agent_pattern == "react" and has_tools):
             live.update("")
         else:
-            live.update(syntax(f"{"\n" if has_tools else ""}🤖: {message.strip()}"))
+            pre = "\n" if has_tools else ""
+            live.update(syntax(f"{pre}🤖: {message.strip()}"))
     return {"tool_history": [ai_message]}
 
 
