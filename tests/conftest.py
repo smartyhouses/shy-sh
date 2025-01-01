@@ -25,8 +25,10 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip_eval)
 
 
-@pytest.fixture()
-def mock_app_settings():
+@pytest.fixture(autouse=True)
+def mock_app_settings(request):
+    if "eval" in request.keywords:
+        return
     mock_settings(
         {
             "language": "esperanto",
