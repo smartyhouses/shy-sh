@@ -146,4 +146,4 @@ def get_alternative_commands(inputs):
             }
         )
         live.update("")
-    return re.findall(r"([^\n]+)\n```[a-z]*\n([^\n]+)\n```", response)
+    return re.findall(r"([^\n]+)\n```[^\n]*\n([^\n]+)\n```", response)

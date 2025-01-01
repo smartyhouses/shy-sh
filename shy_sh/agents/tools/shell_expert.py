@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import pyperclip
 from typing import Annotated
@@ -9,7 +8,7 @@ from rich.live import Live
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm, detect_shell, detect_os
+from shy_sh.utils import ask_confirm, detect_shell, detect_os, parse_code
 from shy_sh.agents.chains.shell_expert import shexpert_chain
 from shy_sh.utils import run_command, tools_to_human, syntax
 from shy_sh.agents.chains.explain import explain
@@ -31,11 +30,10 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
     code = ""
     with Live() as live:
         for chunk in shexpert_chain.stream(inputs):
-            code += chunk
+            code += chunk  # type: ignore
             live.update(syntax(code, theme="command"))
 
-        code = re.sub(r"```\S+\n", "", code)
-        code = code[: code.rfind("```")]
+        code = parse_code(code)
         live.update(syntax(code.strip(), theme="command"))
 
     confirm = "y"

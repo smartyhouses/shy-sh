@@ -8,7 +8,7 @@ from rich.live import Live
 from langgraph.prebuilt import InjectedState
 from langchain.tools import tool
 from shy_sh.models import State, ToolMeta
-from shy_sh.utils import ask_confirm, tools_to_human, syntax, run_python
+from shy_sh.utils import ask_confirm, tools_to_human, syntax, run_python, parse_code
 from shy_sh.agents.chains.python_expert import pyexpert_chain
 from shy_sh.agents.chains.explain import explain
 
@@ -27,8 +27,7 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
         for chunk in pyexpert_chain.stream(inputs):
             code += chunk
             live.update(syntax(code, "python", "command"))
-        code = code.replace("```python\n", "")
-        code = code[: code.rfind("```")]
+        code = parse_code(code)
         live.update(syntax(code.strip(), "python", "command"))
 
     confirm = "y"

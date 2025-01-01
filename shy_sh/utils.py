@@ -1,3 +1,4 @@
+import re
 import os
 import platform
 import subprocess
@@ -6,7 +7,7 @@ from typing import Literal
 from tiktoken import get_encoding
 from rich.prompt import Prompt
 from rich.syntax import Syntax
-from langchain_core.messages import HumanMessage, ToolMessage
+from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
 from shy_sh.settings import settings
 
 RL_HISTORY_FILE = os.path.expanduser("~/.config/shy/.history")
@@ -201,7 +202,15 @@ def count_tokens(
 
 def tools_to_human(messages):
     return [
-        HumanMessage(msg.content) if isinstance(msg, ToolMessage) else msg
+        (
+            HumanMessage(msg.content)
+            if isinstance(msg, ToolMessage)
+            else (
+                AIMessage(msg.content or "tool_request")
+                if isinstance(msg, AIMessage)
+                else msg
+            )
+        )
         for msg in messages
     ]
 
@@ -234,3 +243,8 @@ def get_shell_history():
         )
     except Exception:
         return "I can't get the history for this shell"
+
+
+def parse_code(code):
+    code = re.sub(r"```[^\n]*\n", "", code)
+    return code[: code.rfind("```")]
