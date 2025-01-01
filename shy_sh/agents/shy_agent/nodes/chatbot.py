@@ -28,19 +28,18 @@ def chatbot(state: State):
                 live.update(loading_str)
             else:
                 live.update(
-                    syntax(f"🤖: {message}"),
+                    syntax(f"🤖: {message.strip()}"),
                     refresh=True,
                 )
         message = _parse_chunk_message(final_message)
         ai_message = AIMessage(
             content=message, tool_calls=getattr(final_message, "tool_calls", [])
         )
-        if has_tool_calls(ai_message):
+        has_tools = has_tool_calls(ai_message)
+        if not message or (settings.llm.agent_pattern == "react" and has_tools):
             live.update("")
         else:
-            live.update(
-                syntax(f"🤖: {message}"),
-            )
+            live.update(syntax(f"{'\n' if has_tools else ''}🤖: {message.strip()}"))
     return {"tool_history": [ai_message]}
 
 

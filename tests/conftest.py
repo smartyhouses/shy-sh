@@ -5,7 +5,27 @@ from shy_sh.main import exec as main
 from tests.utils import mock_settings
 
 
-@pytest.fixture(autouse=True)
+def pytest_addoption(parser):
+    parser.addoption(
+        "--eval", action="store_true", default=False, help="run slow tests"
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "slow: mark test as slow to run")
+
+
+def pytest_collection_modifyitems(config, items):
+    is_eval = config.getoption("--eval")
+    skip_eval = pytest.mark.skip(reason="need --eval option to run")
+    for item in items:
+        if ("eval" in item.keywords and not is_eval) or (
+            "eval" not in item.keywords and is_eval
+        ):
+            item.add_marker(skip_eval)
+
+
+@pytest.fixture()
 def mock_app_settings():
     mock_settings(
         {

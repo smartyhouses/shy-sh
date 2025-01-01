@@ -1,3 +1,4 @@
+import re
 import json
 from time import strftime
 from uuid import uuid4
@@ -36,6 +37,7 @@ def parse_react_tool(message):
             open_brackets -= 1
         end_idx += 1
     maybe_tool = message.content[start_idx:end_idx]
+    maybe_tool = re.sub(r"\\(?!\\)", r"\\\\", maybe_tool)
     try:
         return ToolRequest.model_validate_json(maybe_tool)
     except Exception:
