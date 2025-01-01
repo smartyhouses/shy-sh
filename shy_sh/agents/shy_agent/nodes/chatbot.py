@@ -28,7 +28,7 @@ def chatbot(state: State):
                 live.update(loading_str)
             else:
                 live.update(
-                    syntax(f"🤖: {message.strip()}"),
+                    syntax(f"🤖: {message}"),
                     refresh=True,
                 )
         message = _parse_chunk_message(final_message)
@@ -39,8 +39,7 @@ def chatbot(state: State):
         if not message or (settings.llm.agent_pattern == "react" and has_tools):
             live.update("")
         else:
-            pre = "\n" if has_tools else ""
-            live.update(syntax(f"{pre}🤖: {message.strip()}"))
+            live.update(syntax(f"\n🤖: {message}"))
     return {"tool_history": [ai_message]}
 
 
