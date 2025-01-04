@@ -51,6 +51,8 @@ class ShyAgent:
             self._run(task)
         if self.interactive:
             new_task = input("\n✨: ")
+            while new_task.endswith("\\"):
+                new_task = new_task[:-1] + "\n" + input("    ")
             save_history()
             if new_task == "exit":
                 print("\n🤖: 👋 Bye!\n")

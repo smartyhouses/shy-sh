@@ -2,7 +2,7 @@ import typer
 import readline
 from typing import Optional, Annotated
 from importlib.metadata import version
-from shy_sh.agents.agent import ShyAgent
+from shy_sh.agents.shy_agent.agent import ShyAgent
 from shy_sh.settings import settings, configure_yaml
 from shy_sh.agents.chains.explain import explain as do_explain
 from shy_sh.utils import load_history
