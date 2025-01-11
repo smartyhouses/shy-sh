@@ -26,13 +26,6 @@ def exec(
             help="Do not ask for confirmation before executing scripts",
         ),
     ] = False,
-    screenshot: Annotated[
-        Optional[bool],
-        typer.Option(
-            "-s",
-            help="Take a screenshot of the terminal before the execution",
-        ),
-    ] = False,
     explain: Annotated[
         Optional[bool],
         typer.Option(
@@ -78,7 +71,6 @@ def exec(
         ShyAgent(
             interactive=interactive,
             ask_before_execute=not no_ask,
-            screenshot=screenshot,
         ).start(task)
     except Exception as e:
         print(f"🚨 [bold red]{e}[/bold red]")

@@ -39,12 +39,6 @@ def mock_app_settings(request):
                 "provider": "ollama",
                 "temperature": 1.0,
             },
-            "vision_llm": {
-                "api_key": "xxx",
-                "name": "test",
-                "provider": "ollama",
-                "temperature": 1.0,
-            },
         }
     )
 

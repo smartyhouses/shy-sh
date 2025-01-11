@@ -27,20 +27,19 @@ class LLMSchema(BaseLLMSchema):
 class _Settings(BaseModel):
     llm: LLMSchema = LLMSchema(provider="ollama", name="llama3.2")
 
-    vision_llm: BaseLLMSchema | None = None
-
     language: str = ""
     safe_mode: bool = False
 
 
 class Settings(BaseSettings, _Settings):
     model_config = SettingsConfigDict(
+        extra="ignore",
         yaml_file=[
             "~/.config/shy/config.yaml",
             "~/.config/shy/config.yml",
             "./shy.yaml",
             "./shy.yml",
-        ]
+        ],
     )
 
     @classmethod
@@ -143,14 +142,6 @@ def configure_yaml():
         **_text_style,
     ).unsafe_ask()
 
-    vision_llm = settings.vision_llm.model_dump() if settings.vision_llm else llm.copy()
-
-    setup_vision = confirm(
-        "Setup Vision Model?", default=False, **_text_style
-    ).unsafe_ask()
-    if setup_vision:
-        vision_llm = configure_vision_model()
-
     file_name = get_or_create_settings_path()
 
     with open(file_name, "w") as f:
@@ -158,7 +149,6 @@ def configure_yaml():
             yaml.dump(
                 {
                     "llm": llm,
-                    "vision_llm": vision_llm,
                     "language": language,
                     "safe_mode": safe_mode,
                 }
@@ -166,55 +156,6 @@ def configure_yaml():
         )
 
     print(f"\nConfiguration saved to {file_name}")
-
-
-def configure_vision_model():
-    provider = select(
-        message="Provider:",
-        choices=PROVIDERS,
-        default=(
-            settings.vision_llm.provider
-            if settings.vision_llm
-            else settings.llm.provider
-        ),
-        **_select_style,
-    ).unsafe_ask()
-    if provider != "ollama":
-        api_key = password(
-            message="API Key:",
-            default=(
-                settings.vision_llm.api_key
-                if settings.vision_llm
-                else settings.llm.api_key
-            ),
-            **_text_style,
-        ).unsafe_ask()
-    else:
-        api_key = (
-            settings.vision_llm.api_key if settings.vision_llm else settings.llm.api_key
-        )
-    model = input_model(
-        provider,
-        api_key,
-        settings.vision_llm.name if settings.vision_llm else settings.llm.name,
-    )
-    temperature = text(
-        message="Temperature:",
-        default=str(
-            settings.vision_llm.temperature
-            if settings.vision_llm
-            else settings.llm.temperature
-        ),
-        validate=lambda x: _try_float(x),
-        **_text_style,
-    ).unsafe_ask()
-
-    return {
-        "provider": provider,
-        "name": model,
-        "api_key": api_key,
-        "temperature": float(temperature),
-    }
 
 
 def input_model(provider: str, api_key: str, default_model: str | None = None):

@@ -19,7 +19,7 @@ packages = [{include = "shy_sh"}]
 
 [tool.poetry.dependencies]
 python = "<3.13,>=3.10"
-typer = "^0.12.3"
+typer = "^0.15.1"
 langchain = "^0.3.7"
 langgraph = "^0.2.45"
 langchain-groq = "^0.2.1"
@@ -33,7 +33,6 @@ anthropic = "^0.39.0"
 tiktoken = "^0.8.0"
 pyyaml = "^6.0.1"
 pydantic-settings = "^2.3.4"
-pillow = "^11.0.0"
 pyperclip = "^1.9.0"
 questionary = "^2.0.1"
 pyreadline3 = "^3.5.4"

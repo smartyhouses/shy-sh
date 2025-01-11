@@ -10,7 +10,7 @@ Sh shell AI copilot
 pip install shy-sh
 ```
 
-Configure your LLM (default use ollama - llama3.2)
+Configure your LLM
 
 ```sh
 shy --configure
@@ -29,7 +29,6 @@ Options
 
 - -i Interactive mode [default false if a prompt is passed else true]
 - -x Do not ask confirmation before executing scripts
-- -s or start your message with /screen: (Experimental) Take a screenshot to be analyzed with the prompt (requires vision model)
 - -e Explain the given shell command
 - --configure Configure LLM
 - --help Show this message and exit.
@@ -44,7 +43,6 @@ shy --configure
  Temperature: 0.0
  Language: klingon
  Safe Mode: Yes
- Setup Vision Model? No
 ```
 
 #### Configurable settings
@@ -56,7 +54,6 @@ shy --configure
 - Temperature: The LLM model's temperature setting.
 - Language: The language for the LLM's final answers.
 - Safe Mode: When enabled, no commands or scripts will be executed on your system; you will only receive suggestions. This feature is recommended for beginners.
-- Setup Vision Model: Experimental
 
 All the settings are saved in `~/.config/shy/config.yml`
 

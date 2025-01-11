@@ -7,13 +7,6 @@ def get_llm():
     return _get_llm(settings.llm)
 
 
-@lru_cache
-def get_vision_llm():
-    if not settings.vision_llm:
-        return get_llm()
-    return _get_llm(settings.vision_llm)
-
-
 def _get_llm(llm_config: BaseLLMSchema):
     llm = None
     match llm_config.provider:
