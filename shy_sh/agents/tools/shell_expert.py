@@ -28,7 +28,7 @@ def shell_expert(arg: str, state: Annotated[State, InjectedState]):
         "history": tools_to_human(state["history"] + state["tool_history"]),
     }
     code = ""
-    with Live() as live:
+    with Live(vertical_overflow="visible") as live:
         for chunk in shexpert_chain.stream(inputs):
             code += chunk  # type: ignore
             live.update(syntax(code, theme="command"))

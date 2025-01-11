@@ -40,7 +40,7 @@ def explain_chain(_):
 
 
 def explain(inputs, ask_execute=True, ask_alternative=False):
-    with Live() as live:
+    with Live(vertical_overflow="visible") as live:
         text = "🤖: "
         for chunk in explain_chain.stream(
             {

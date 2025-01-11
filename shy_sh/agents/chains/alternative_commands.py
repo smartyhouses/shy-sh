@@ -12,7 +12,7 @@ from rich.live import Live
 
 msg_template = dedent(
     """
-    Find some alternative commands or variation of the original that can be used to accomplish the same task as the given command.
+    Find some alternative commands using different tools and variations of the original that can be used to accomplish the same task as the given command.
 
     Generate only one line of code for each alternative command.
     Do not suggest alternatives that are not compatible with the current shell or operating system.

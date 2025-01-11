@@ -23,7 +23,7 @@ def python_expert(arg: str, state: Annotated[State, InjectedState]):
         "input": arg,
     }
     code = ""
-    with Live() as live:
+    with Live(vertical_overflow="visible") as live:
         for chunk in pyexpert_chain.stream(inputs):
             code += chunk
             live.update(syntax(code, "python", "command"))

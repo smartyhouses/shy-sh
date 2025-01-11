@@ -19,7 +19,7 @@ loading_str = "⏱️ Loading..."
 def chatbot(state: State):
     final_message = None
     history = _compress_history(state["history"], state["tool_history"])
-    with Live() as live:
+    with Live(vertical_overflow="visible") as live:
         live.update(loading_str)
         for chunk in shy_agent_chain.stream({**state, "history": history}):
             final_message = chunk if final_message is None else final_message + chunk

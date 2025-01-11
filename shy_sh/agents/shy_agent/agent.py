@@ -23,7 +23,7 @@ class ShyAgent:
     def _update_task_with_image(self, task: str):
         print(f"📸 [bold yellow]Taking a screenshot...[/bold yellow]\n")
         result = ""
-        with Live() as live:
+        with Live(vertical_overflow="visible") as live:
             for chunk in screenshot_chain.stream(
                 {"input": task, "history": self.history}
             ):
