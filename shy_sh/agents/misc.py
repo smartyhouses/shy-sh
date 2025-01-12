@@ -37,12 +37,15 @@ def parse_react_tool(message):
             open_brackets -= 1
         end_idx += 1
     maybe_tool = message.content[start_idx:end_idx]
-    maybe_tool = re.sub(r"\\(?!\\)", r"\\\\", maybe_tool)
     try:
         return ToolRequest.model_validate_json(maybe_tool)
     except Exception:
-        maybe_tool = message.content[start_idx : message.content.rindex("}") + 1]
-        return ToolRequest.model_validate_json(maybe_tool)
+        try:
+            maybe_tool = message.content[start_idx : message.content.rindex("}") + 1]
+            return ToolRequest.model_validate_json(maybe_tool)
+        except Exception:
+            maybe_tool = re.sub(r"\\(?!\\)", r"\\\\", maybe_tool)
+            return ToolRequest.model_validate_json(maybe_tool)
 
 
 def has_tool_calls(message):
