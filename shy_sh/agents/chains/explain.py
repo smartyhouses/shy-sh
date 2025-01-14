@@ -56,7 +56,7 @@ def explain(inputs, ask_execute=True, ask_alternative=False):
 
     if not ask_execute:
         return
-    print(f"🛠️ [bold green]{inputs['script']}[/bold green]")
+    print(f"🛠️ [bold green] {inputs['script']} [/bold green]")
     confirm = ask_confirm(explain=False, alternatives=ask_alternative)
     if confirm == "n":
         return "Command canceled by user", ToolMeta(

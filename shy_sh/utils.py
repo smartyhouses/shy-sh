@@ -175,9 +175,10 @@ def run_command(cmd: str):
         for chunk in stream_shell(cmd):
             print(chunk, end="", flush=True)
             result += chunk
+        result = result or "Exit code: 0"
     else:
         ret_code, result = run_pty(cmd)
-        result = result or ("Success" if ret_code == 0 else "Failed")
+        result = result or f"Exit code: {ret_code}"
     return result
 
 
