@@ -41,7 +41,7 @@ def test_use_shell_tool(exec, mocker):
 
         assert "✨: how are you" in result.stdout
         assert confirm.call_count == 1
-        assert "🛠️ echo fine thanks" in result.stdout
+        assert "🛠️  echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
 
@@ -64,7 +64,7 @@ def test_use_shell_tool_with_alternatives(exec, mocker):
         assert "✨: how are you" in result.stdout
         assert confirm.call_count == 1
         assert select.call_count == 1
-        assert "🛠️ echo fine thanks" in result.stdout
+        assert "🛠️  echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
 
@@ -84,7 +84,7 @@ def test_use_shell_tool_with_explain(exec, mocker):
 
         assert "✨: how are you" in result.stdout
         assert confirm.call_count == 2
-        assert "🛠️ echo fine thanks" in result.stdout
+        assert "🛠️  echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
 
@@ -104,7 +104,7 @@ def test_use_shell_tool_no_confirmation(exec, mocker):
             "Do you want to execute this command? [Yes/no/copy/explain]"
             not in result.stdout
         )
-        assert "🛠️ echo fine thanks" in result.stdout
+        assert "🛠️  echo fine thanks" in result.stdout
         assert "🤖: fine thanks" in result.stdout
 
 
@@ -229,7 +229,7 @@ def test_use_tool_chain(exec, mocker):
         assert result.exit_code == 0
 
         assert "✨: how are you" in result.stdout
-        assert "🛠️ echo fine thanks" in result.stdout
+        assert "🛠️  echo fine thanks" in result.stdout
         assert "💻 Generating shell script..." in result.stdout
         assert "🐍 Generating python script..." in result.stdout
         assert "🤖: fine thanks" in result.stdout
