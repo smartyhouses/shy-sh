@@ -2,7 +2,6 @@ import re
 import os
 import platform
 import subprocess
-import readline
 from typing import Literal
 from tiktoken import get_encoding
 from rich.prompt import Prompt
@@ -10,10 +9,18 @@ from rich.syntax import Syntax
 from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
 from shy_sh.settings import settings
 
+try:
+    import readline
+except Exception:
+    readline = None
+
+
 RL_HISTORY_FILE = os.path.expanduser("~/.config/shy/.history")
 
 
 def load_history():
+    if not readline:
+        return
     try:
         readline.read_history_file(RL_HISTORY_FILE)
     except FileNotFoundError:
@@ -21,11 +28,19 @@ def load_history():
 
 
 def save_history():
+    if not readline:
+        return
     readline.write_history_file(RL_HISTORY_FILE)
 
 
-def ask_confirm(explain=True, alternatives=False) -> Literal["y", "n", "c", "e", "a"]:
+def clear_history():
+    if not readline:
+        return
     readline.clear_history()
+
+
+def ask_confirm(explain=True, alternatives=False) -> Literal["y", "n", "c", "e", "a"]:
+    clear_history()
     choices = ["n", "c", "no", "copy"]
     if explain:
         choices.extend(["e", "explain"])
@@ -50,7 +65,7 @@ def ask_confirm(explain=True, alternatives=False) -> Literal["y", "n", "c", "e",
         show_choices=False,
         case_sensitive=False,
     ).lower()[0]
-    readline.clear_history()
+    clear_history()
     load_history()
     return ret  # type: ignore
 

@@ -40,7 +40,7 @@ _select_style = {
 @tool(response_format="content_and_artifact")
 def shell(arg: str, state: Annotated[State, InjectedState]):
     """to execute a shell command in the terminal, useful for every task that requires to interact with the current system or local files, do not pass multiple lines commands, avoid to install new packages if not explicitly requested"""
-    print(f"🛠️ [bold green]{arg}[/bold green]")
+    print(f"🛠️ [bold green]{arg} [/bold green]")
     result = ""
     confirm = "y"
     if state["ask_before_execute"]:

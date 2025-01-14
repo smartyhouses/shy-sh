@@ -1,5 +1,4 @@
 import typer
-import readline
 from typing import Optional, Annotated
 from importlib.metadata import version
 from shy_sh.agents.shy_agent.agent import ShyAgent
@@ -77,7 +76,12 @@ def exec(
 
 
 def main():
-    readline.set_history_length(20)
+    try:
+        import readline
+
+        readline.set_history_length(20)
+    except Exception:
+        pass
     load_history()
     typer.run(exec)
 
